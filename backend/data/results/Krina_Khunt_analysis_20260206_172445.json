@@ -1,0 +1,129 @@
+{
+  "timestamp": "2026-02-06T17:24:45.961465",
+  "candidate_name": "Krina Khunt",
+  "overall_score": 91.0,
+  "rating": "Excellent",
+  "scores": {
+    "keyword_match": 0,
+    "skills_match": 0,
+    "format_ats_friendly": 90,
+    "impact_score": 95,
+    "completeness": 85.0,
+    "experience_relevance": 70,
+    "education": 100
+  },
+  "contact_info": {
+    "emails": [
+      "krinakhunt12@gmail.com"
+    ],
+    "phones": [],
+    "linkedin": null,
+    "github": null
+  },
+  "skills": {
+    "technical": {
+      "programming_languages": [
+        "Python",
+        "JavaScript"
+      ],
+      "web_technologies": [
+        "HTML",
+        "CSS",
+        "React",
+        "Tailwind CSS",
+        "REST API"
+      ],
+      "tools": [
+        "Git",
+        "GitHub",
+        "Postman"
+      ],
+      "methodologies": [
+        "RESTful"
+      ]
+    },
+    "soft": [
+      "Leadership",
+      "Communication",
+      "Problem Solving",
+      "Critical Thinking",
+      "Time Management",
+      "Detail-oriented"
+    ],
+    "all_technical": [
+      "Python",
+      "JavaScript",
+      "HTML",
+      "CSS",
+      "React",
+      "Tailwind CSS",
+      "REST API",
+      "Git",
+      "GitHub",
+      "Postman",
+      "RESTful"
+    ]
+  },
+  "education": {
+    "degrees": [
+      "Information Technology",
+      "University",
+      "Engineering",
+      "Bachelor",
+      "Software"
+    ],
+    "years": [
+      "2022",
+      "2026"
+    ],
+    "has_education_section": true
+  },
+  "experience": {
+    "years_mentioned": [],
+    "keywords_found": [
+      [
+        "experience",
+        5
+      ],
+      [
+        "developer",
+        3
+      ]
+    ],
+    "years_in_text": [
+      "2022",
+      "2026"
+    ],
+    "has_experience_section": true
+  },
+  "sections": {
+    "contact": true,
+    "summary": true,
+    "experience": true,
+    "education": true,
+    "skills": true,
+    "projects": true,
+    "certifications": true,
+    "achievements": false
+  },
+  "format_check": {
+    "score": 90,
+    "issues": [
+      "Phone number not found"
+    ],
+    "warnings": [],
+    "is_ats_friendly": true
+  },
+  "recommendations": [
+    "URGENT: Phone number not found"
+  ],
+  "strengths": [
+    "High-impact language and metrics used",
+    "Perfect ATS-friendly formatting"
+  ],
+  "statistics": {
+    "total_words": 383,
+    "unique_words": 254,
+    "sentences": 33
+  }
+}
