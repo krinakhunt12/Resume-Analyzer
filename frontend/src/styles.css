@@ -1,1 +1,51 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+    /* SaaS Dashboard Palette - Calm Blue Theme */
+    --primary: #2563eb;
+    /* Calm Blue */
+    --primary-soft: #60a5fa;
+    /* Soft Blue highlight */
+    --primary-light: #eff6ff;
+    --primary-hover: #1d4ed8;
+    --primary-focus: rgba(96, 165, 250, 0.2);
+
+    --bg-page: #f8fafc;
+    /* Airy light gray canvas */
+    --bg-card: #ffffff;
+
+    --text-primary: #111827;
+    /* Almost Black headings */
+    --text-secondary: #6b7280;
+    /* Cool Gray labels/metadata */
+    --text-muted: #9ca3af;
+
+    --border-main: #e5e7eb;
+    --border-subtle: #f1f5f9;
+
+    --success: #22c55e;
+    /* Accent Green */
+    --success-light: #f0fdf4;
+    --warning: #f59e0b;
+    --warning-light: #fffbeb;
+    --danger: #ef4444;
+    --danger-light: #fef2f2;
+
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    line-height: 1.6;
+}

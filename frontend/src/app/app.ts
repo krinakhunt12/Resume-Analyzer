@@ -23,6 +23,7 @@ export class App {
   isLoading = signal<boolean>(false);
   errorMsg = signal<string>('');
   results = signal<any>(null);
+  recruiterInsights = signal<any>(null);
   reports = signal<any>(null);
 
   // Advanced features
@@ -53,6 +54,7 @@ export class App {
 
     this.isLoading.set(true);
     this.results.set(null);
+    this.recruiterInsights.set(null);
     this.errorMsg.set('');
     this.coverLetter.set('');
 
@@ -70,6 +72,7 @@ export class App {
     this.atsService.analyzeResume(formData).subscribe({
       next: (data: any) => {
         this.results.set(data.results);
+        this.recruiterInsights.set(data.recruiter_insights);
         this.reports.set(data.reports);
         this.isLoading.set(false);
         setTimeout(() => {
@@ -103,9 +106,9 @@ export class App {
   getRatingClass(rating: string): string {
     if (!rating) return '';
     const r = rating.toLowerCase();
-    if (r.includes('excellent')) return 'rating-excellent';
-    if (r.includes('good')) return 'rating-good';
-    return 'rating-fair';
+    if (r.includes('excellent')) return 'badge-excellent';
+    if (r.includes('good')) return 'badge-good';
+    return 'badge-fair';
   }
 
   getDownloadUrl(filename: string): string {

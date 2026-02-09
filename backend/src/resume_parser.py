@@ -122,8 +122,15 @@ class ResumeParser:
         """Extract work experience information with dates and titles"""
         text_lower = text.lower()
         
-        # 1. Extract years of experience mentioned (e.g., "5 years of experience")
-        experience_years = re.findall(r'(\d+)\+?\s*(?:years?|yrs?)(?:\s+of)?\s+(?:experience|exp)', text_lower)
+        # 1. Extract years of experience mentioned (e.g., "5 years of experience", "Total 5+ years")
+        experience_years = re.findall(r'(?:\btotal\s+of\s+)?(\d+)\+?\s*(?:years?|yrs?)(?:\s+of)?\s+(?:experience|exp|working|industry)', text_lower)
+        
+        # 2. If no explicit mention, try to calculate from date ranges
+        # (This is more complex, but let's add a simple check for "X+ years" at start)
+        if not experience_years:
+            matches = re.findall(r'\b(\d+)\+\s*years', text_lower)
+            if matches:
+                experience_years.extend(matches)
         
         # 2. Extract specific date ranges (e.g., "Jan 2020 - Present", "2018 to 2019")
         date_range_pattern = r'\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4}\s*(?:-|to|until)\s*(?:Present|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4})'

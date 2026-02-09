@@ -79,32 +79,35 @@ class ATSResumeAnalyzer:
         # Step 5: Display results
         self._display_results(analysis_results, parsed_resume)
         
-        # Step 6: Generate reports
-        print("\n📊 Generating reports...")
-        base_filename = Path(resume_path).stem + "_analysis"
-        
-        if output_format == 'all':
-            reports = self.report_generator.generate_all_reports(
-                analysis_results, parsed_resume, base_filename
-            )
-            print(f"✓ Text report: {reports['text']}")
-            print(f"✓ JSON report: {reports['json']}")
-            print(f"✓ Excel report: {reports['excel']}")
-        elif output_format == 'text':
-            filepath, _ = self.report_generator.generate_text_report(
-                analysis_results, parsed_resume, f"{base_filename}.txt"
-            )
-            print(f"✓ Text report: {filepath}")
-        elif output_format == 'json':
-            filepath, _ = self.report_generator.generate_json_report(
-                analysis_results, parsed_resume, f"{base_filename}.json"
-            )
-            print(f"✓ JSON report: {filepath}")
-        elif output_format == 'excel':
-            filepath = self.report_generator.generate_excel_report(
-                analysis_results, parsed_resume, f"{base_filename}.xlsx"
-            )
-            print(f"✓ Excel report: {filepath}")
+        # Step 6: Generate reports (Only if format is not 'none')
+        if output_format != 'none':
+            print("\n📊 Generating reports...")
+            base_filename = Path(resume_path).stem + "_analysis"
+            
+            if output_format == 'all':
+                reports = self.report_generator.generate_all_reports(
+                    analysis_results, parsed_resume, base_filename
+                )
+                print(f"✓ Text report: {reports['text']}")
+                print(f"✓ JSON report: {reports['json']}")
+                print(f"✓ Excel report: {reports['excel']}")
+            elif output_format == 'text':
+                filepath, _ = self.report_generator.generate_text_report(
+                    analysis_results, parsed_resume, f"{base_filename}.txt"
+                )
+                print(f"✓ Text report: {filepath}")
+            elif output_format == 'json':
+                filepath, _ = self.report_generator.generate_json_report(
+                    analysis_results, parsed_resume, f"{base_filename}.json"
+                )
+                print(f"✓ JSON report: {filepath}")
+            elif output_format == 'excel':
+                filepath = self.report_generator.generate_excel_report(
+                    analysis_results, parsed_resume, f"{base_filename}.xlsx"
+                )
+                print(f"✓ Excel report: {filepath}")
+        else:
+            print("\n💡 Tip: Use --format [text|json|excel] to save results to a temporary file.")
         
         print("\n" + "="*80)
         print("Analysis complete!")
@@ -195,8 +198,8 @@ Examples:
     
     parser.add_argument(
         '--resume', '-r',
-        required=True,
-        help='Path to resume file (PDF or DOCX)'
+        required=False,
+        help='Path to resume file (PDF or DOCX). If omitted, searches data/resumes/'
     )
     
     parser.add_argument(
@@ -206,16 +209,35 @@ Examples:
     
     parser.add_argument(
         '--format', '-f',
-        choices=['text', 'json', 'excel', 'all'],
-        default='all',
-        help='Output format for reports (default: all)'
+        choices=['text', 'json', 'excel', 'all', 'none'],
+        default='none',
+        help='Output format for reports (default: none - only prints to terminal)'
     )
     
     args = parser.parse_args()
     
+    resume_path = args.resume
+    
+    # Auto-find resume if not provided
+    if not resume_path:
+        search_dir = 'data/resumes'
+        if os.path.exists(search_dir):
+            files = [f for f in os.listdir(search_dir) if f.lower().endswith(('.pdf', '.docx'))]
+            if files:
+                resume_path = os.path.join(search_dir, files[0])
+                print(f"💡 No resume provided. Automatically selecting: {resume_path}")
+            else:
+                print(f"❌ Error: No resume provided and no files found in '{search_dir}'")
+                print("Usage: python main.py --resume path/to/your/resume.pdf")
+                sys.exit(1)
+        else:
+            print("❌ Error: Resume argument is required.")
+            print("Usage: python main.py --resume path/to/your/resume.pdf")
+            sys.exit(1)
+    
     # Validate files exist
-    if not os.path.exists(args.resume):
-        print(f"Error: Resume file not found: {args.resume}")
+    if not os.path.exists(resume_path):
+        print(f"Error: Resume file not found: {resume_path}")
         sys.exit(1)
     
     if args.jd and not os.path.exists(args.jd):
@@ -224,7 +246,7 @@ Examples:
     
     # Run analysis
     app = ATSResumeAnalyzer()
-    app.analyze_resume(args.resume, args.jd, args.format)
+    app.analyze_resume(resume_path, args.jd, args.format)
 
 
 if __name__ == "__main__":

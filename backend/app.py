@@ -97,13 +97,73 @@ def analyze():
         parsed_resume = parser.parse(resume_text)
         analysis_results = analyzer.analyze(resume_text, parsed_resume, job_description)
         
-        # Generate reports
-        base_filename = resume_filename.rsplit('.', 1)[0] + '_analysis'
-        reports = report_generator.generate_all_reports(
-            analysis_results, parsed_resume, base_filename
+        # Generate text report content directly without saving to disk
+        _, report_text = report_generator.generate_text_report(
+            analysis_results, parsed_resume, filename=None
         )
         
-        # Prepare response
+        # Prepare the recruiter-style structured insights
+        skills = parsed_resume.get('skills', {})
+        tech_skills = skills.get('technical', {})
+        
+        # 1. Candidate Details
+        experience_data = parsed_resume.get('experience', {})
+        years_list = experience_data.get('years_mentioned', [])
+        total_years = years_list[0] if years_list else "Not explicitly stated"
+        
+        contact_info = parsed_resume.get('contact_info', {})
+        emails = contact_info.get('emails', [])
+        phones = contact_info.get('phones', [])
+        
+        candidate_details = {
+            'name': parsed_resume.get('name', 'Not Found'),
+            'email': emails[0] if emails else "Not Found",
+            'phone': phones[0] if phones else "Not Found",
+            'total_years_experience': total_years
+        }
+        
+        # 2. Key Sections
+        key_sections = {
+            'skills': {
+                'technical': tech_skills.get('programming_languages', []) + tech_skills.get('web_technologies', []),
+                'tools': tech_skills.get('tools', []) + tech_skills.get('cloud_platforms', []),
+                'soft_skills': skills.get('soft', [])
+            },
+            'work_experience_summary': " - ".join(experience_data.get('detected_titles', [])[:5]),
+            'education': parsed_resume.get('education', {}).get('degrees', [])
+        }
+        
+        # 3. Resume Quality
+        resume_quality = {
+            'strengths': analysis_results.get('strengths', []),
+            'weaknesses': [rec for rec in analysis_results.get('recommendations', []) if "URGENT" in rec],
+            'missing_or_unclear_information': [s for s, present in parsed_resume.get('sections', {}).items() if not present]
+        }
+        
+        # 4. ATS Compatibility
+        ats_compatibility = {
+            'score': analysis_results['overall_score'],
+            'reasons': [f"Rating: {analysis_results['rating']}"],
+            'formatting_issues': analysis_results.get('format_check', {}).get('issues', []),
+            'keyword_issues': analysis_results.get('keyword_match', {}).get('missing_keywords', []) if 'keyword_match' in analysis_results else []
+        }
+        
+        # 5. Improvement Suggestions
+        roadmap = analysis_results.get('career_roadmap', {})
+        improvement_suggestions = {
+            'skills_to_add': [s for s in (analysis_results.get('skills_match', {}).get('missing_skills', []) or [])[:10]],
+            'resume_formatting_improvements': [rec for rec in analysis_results.get('recommendations', []) if "format" in rec.lower()],
+            'content_improvements': roadmap.get('steps', [])
+        }
+        
+        # Prepare reports for compatibility (in-memory names)
+        reports = {
+            'text': f"{resume_filename.rsplit('.', 1)[0]}_report.txt",
+            'json': f"{resume_filename.rsplit('.', 1)[0]}_report.json",
+            'excel': f"{resume_filename.rsplit('.', 1)[0]}_report.xlsx"
+        }
+
+        # Final JSON Response (Combined for compatibility and new requirements)
         response_data = {
             'success': True,
             'results': {
@@ -120,24 +180,26 @@ def analyze():
                 },
                 'sections': parsed_resume.get('sections', {}),
                 'format_check': analysis_results.get('format_check', {}),
-                'impact_analysis': analysis_results.get('impact_analysis', {})
+                'impact_analysis': analysis_results.get('impact_analysis', {}),
+                'readability': analysis_results.get('readability', {}),
+                'tone_analysis': analysis_results.get('tone_analysis', {}),
+                'career_analysis': analysis_results.get('career_analysis', {}),
+                'link_validation': analysis_results.get('link_validation', []),
+                'role_suitability': analysis_results.get('role_suitability', []),
+                'career_roadmap': analysis_results.get('career_roadmap', {}),
+                'full_report': report_text
             },
-            'reports': {
-                'text': os.path.basename(reports['text']),
-                'json': os.path.basename(reports['json']),
-                'excel': os.path.basename(reports['excel'])
+            'reports': reports,
+            'recruiter_insights': {
+                'candidate_details': candidate_details,
+                'key_sections': key_sections,
+                'resume_quality': resume_quality,
+                'ats_compatibility': ats_compatibility,
+                'improvement_suggestions': improvement_suggestions
             }
         }
         
-        # Add skills match if available
-        if 'skills_match' in analysis_results:
-            response_data['results']['skills_match'] = {
-                'score': analysis_results['skills_match']['score'],
-                'matched': len(analysis_results['skills_match'].get('matched_skills', [])),
-                'missing': len(analysis_results['skills_match'].get('missing_skills', [])),
-                'missing_skills': analysis_results['skills_match'].get('missing_skills', [])[:10]
-            }
-        
+        print(f"✅ Analysis complete for: {candidate_details['name']}")
         return jsonify(response_data)
     
     except Exception as e:

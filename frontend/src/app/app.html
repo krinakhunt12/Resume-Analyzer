@@ -1,279 +1,181 @@
 <div class="app-container">
   <header class="app-header">
-    <h1>ATS Resume Analyzer Pro</h1>
-    <p>Professional ATS matching and analysis for modern resumes</p>
+    <h1>Resume Analyzer</h1>
+    <p>Enterprise ATS matching & intelligence dashboard</p>
   </header>
 
   <main>
-    <!-- Upload Section -->
-    <section class="card">
-      <form (submit)="onSubmit($event)">
-        <div class="upload-grid">
-          <div class="form-group">
-            <label class="form-label">Step 1: Upload Resume (PDF/DOCX)</label>
-            <div class="drop-zone">
-              <span class="icon">📄</span>
-              <strong *ngIf="!resumeFile()">Click or Drag to Upload</strong>
-              <strong *ngIf="resumeFile()" style="color: var(--primary)">{{ resumeFileName() }}</strong>
-              <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">Max size 16MB</p>
-              <input type="file" (change)="onFileChange($event, 'resume')" accept=".pdf,.docx,.doc" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Step 2: Job Description (Optional)</label>
-            <textarea class="jd-textarea" name="jd_text" [(ngModel)]="jdText"
-              placeholder="Paste the job description here to get a match score and missing keyword analysis..."></textarea>
-          </div>
+    <!-- Upload Flow -->
+    <div class="upload-flow" *ngIf="!results() && !isLoading()">
+      <div class="card">
+        <h2 class="section-title">Resume Document</h2>
+        <div class="drop-zone" [class.active]="resumeFile()">
+          <div class="icon">📄</div>
+          <h3 *ngIf="!resumeFile()">Upload or drop resume</h3>
+          <h3 *ngIf="resumeFile()" style="color: var(--primary)">{{ resumeFileName() }}</h3>
+          <p>Supports .pdf, .docx up to 16MB</p>
+          <input type="file" (change)="onFileChange($event, 'resume')" accept=".pdf,.docx,.doc">
         </div>
+      </div>
 
-        <button type="submit" class="btn-primary" [disabled]="isLoading()" style="margin-top: 1.5rem">
-          {{ isLoading() ? 'Running Analysis...' : 'Analyze Now' }}
-        </button>
-      </form>
+      <div class="card">
+        <h2 class="section-title">Contextual Job Description</h2>
+        <div class="jd-box">
+          <textarea class="jd-textarea" name="jd_text" [(ngModel)]="jdText"
+            placeholder="Paste target job description to calculate match scores and identify keyword gaps..."></textarea>
+        </div>
+      </div>
 
-      <div class="error-msg" *ngIf="errorMsg()"
-        style="display: block; margin-top: 1rem; color: var(--danger); font-weight: 500;">
+      <div class="error-box" *ngIf="errorMsg()">
         {{ errorMsg() }}
       </div>
-    </section>
+
+      <button class="btn-primary" (click)="onSubmit($event)" [disabled]="!resumeFile() || isLoading()">
+        {{ isLoading() ? 'Running Analysis...' : 'Analyze Workflow' }}
+      </button>
+    </div>
 
     <!-- Loading State -->
-    <div class="loading-overlay" *ngIf="isLoading()">
+    <div class="loading-state" *ngIf="isLoading()">
       <div class="spinner"></div>
-      <p style="font-weight: 600;">Processing Text...</p>
-      <p style="font-size: 0.875rem; color: var(--text-muted)">Running deep parsing, keyword matching, and AI analysis
-      </p>
+      <p style="font-weight: 600; font-size: 1.25rem;">Processing Intelligence</p>
+      <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.5rem;">Cross-referencing experience with
+        industry benchmarks...</p>
     </div>
 
     <!-- Results Section -->
-    <div class="results-dashboard" id="results" *ngIf="results()">
+    <div class="results-container" *ngIf="results()">
 
-      <!-- Dashboard Summary -->
-      <div class="dashboard-header card">
-        <div class="score-main-box">
-          <div class="overall-score-circle">
-            {{ results().overall_score | number:'1.0-0' }}
+      <!-- Score Overview -->
+      <div class="card score-card">
+        <div>
+          <div class="rating-badge" [ngClass]="getRatingClass(results().rating)">
+            {{ results().rating }}
           </div>
-          <div>
-            <h2 style="font-size: 1.5rem; margin-bottom: 0.25rem;">Overall Match Score</h2>
-            <div class="rating-tag" [ngClass]="getRatingClass(results().rating)">
-              {{ results().rating }}
-            </div>
-          </div>
+          <h2>ATS Integrity Score</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">Structural and keyword compatibility analysis.</p>
         </div>
+        <div class="score-visual">
+          <span class="score-number">{{ results().overall_score | number:'1.0-0' }}</span>
+        </div>
+      </div>
 
-        <div class="contact-box" *ngIf="results().candidate_name">
-          <h4>Candidate Information</h4>
-          <p style="font-weight: 700; color: #1e293b;">{{ results().candidate_name }}</p>
-          <p style="font-size: 0.875rem; color: var(--text-muted)">{{ results().contact_info.emails?.[0] || 'Email not
-            found' }}</p>
-          <div style="display: flex; gap: 8px; margin-top: 5px;" *ngIf="results().link_validation">
-            <span *ngFor="let link of results().link_validation" [title]="link.url"
-              [style.color]="link.status === 'Active' ? 'var(--success)' : 'var(--danger)'"
-              style="font-size: 0.75rem; font-weight: 600;">
-              {{ link.name }}: {{ link.status }}
-            </span>
+      <!-- Recruiter Insights -->
+      <div class="card" *ngIf="recruiterInsights()">
+        <h2 class="section-title">Candidate Profile</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Full Name</label>
+            <span>{{ recruiterInsights().candidate_details.name }}</span>
+          </div>
+          <div class="info-item">
+            <label>Professional Tenure</label>
+            <span>{{ recruiterInsights().candidate_details.total_years_experience }} Years</span>
+          </div>
+          <div class="info-item">
+            <label>Email Address</label>
+            <span>{{ recruiterInsights().candidate_details.email }}</span>
+          </div>
+          <div class="info-item">
+            <label>Primary Phone</label>
+            <span>{{ recruiterInsights().candidate_details.phone }}</span>
           </div>
         </div>
       </div>
 
-      <div class="results-grid">
-        <!-- Main Analysis Column -->
-        <div class="main-column">
+      <!-- Skills Taxonomy -->
+      <div class="card" *ngIf="recruiterInsights()">
+        <h2 class="section-title">Technical Taxonomy</h2>
 
-          <div class="card">
-            <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem;">📊 Performance Metrics</h3>
-            <div class="metric-card" *ngFor="let key of getScoreKeys(results().scores)">
-              <div class="metric-header">
-                <span>{{ key.replace('_', ' ') | titlecase }}</span>
-                <span>{{ results().scores[key] | number:'1.0-0' }}%</span>
-              </div>
-              <div class="progress-track">
-                <div class="progress-fill" [style.width.%]="results().scores[key]"
-                  [style.background-color]="results().scores[key] < 40 ? 'var(--danger)' : (results().scores[key] < 70 ? 'var(--warning)' : 'var(--primary)')">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card" *ngIf="results().keyword_match?.missing_keywords?.length">
-            <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--danger);">❌ Missing Keywords (N-gram Gap)
-            </h3>
-            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
-              The following phrases and terms from the Job Description were not found in your resume:
-            </p>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-              <span class="pill" style="background: #fef2f2; color: #991b1b; padding: 4px 12px;"
-                *ngFor="let kw of results().keyword_match.missing_keywords">
-                {{ kw }}
-              </span>
-            </div>
-          </div>
-
-          <div class="card" *ngIf="results().career_analysis">
-            <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">🛤️ Career Path & Seniority</h3>
-            <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-              <p style="font-size: 0.875rem; font-weight: 600;">Estimated Level: <span style="color: var(--primary)">{{
-                  results().career_analysis.seniority_level }}</span></p>
-              <p style="font-size: 0.875rem; margin-top: 4px;">Growth Score: {{ results().career_analysis.growth_score
-                }}%</p>
-            </div>
-
-            <div *ngIf="results().career_analysis.gaps?.length">
-              <p style="font-size: 0.875rem; font-weight: 600; color: var(--warning); margin-bottom: 0.5rem;">⚠️
-                Employment Gaps Detected</p>
-              <div class="check-item warning" *ngFor="let gap of results().career_analysis.gaps">
-                <span class="check-icon">!</span>
-                <div>{{ gap }}</div>
-              </div>
-            </div>
-
-            <div *ngIf="results().career_analysis.career_progression?.length" style="margin-top: 1rem;">
-              <p style="font-size: 0.875rem; font-weight: 600; color: var(--success);">📈 Growth Progression</p>
-              <div class="check-item success" *ngFor="let p of results().career_analysis.career_progression">
-                <span class="check-icon">↑</span>
-                <div>{{ p }}</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Role Suitability - NEW Section -->
-          <div class="card" *ngIf="results().role_suitability?.length">
-            <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--primary);">🎯 Strategic Role Suitability
-            </h3>
-            <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
-              <div *ngFor="let role of results().role_suitability"
-                style="background: #f8fafc; border: 1px solid var(--border-color); padding: 1rem; border-radius: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                  <strong style="font-size: 1rem; color: var(--text-main);">{{ role.role }}</strong>
-                  <span class="rating-tag"
-                    [style.background]="role.suitability > 70 ? '#d1fae5' : (role.suitability > 40 ? '#fef9c3' : '#f1f5f9')"
-                    [style.color]="role.suitability > 70 ? '#065f46' : (role.suitability > 40 ? '#854d0e' : '#475569')">
-                    {{ role.suitability }}% Match
-                  </span>
-                </div>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
-                  Matched core expertise: {{ role.matched_core_skills?.join(', ') || 'General experience' }}
-                </p>
-                <div class="progress-track" style="height: 6px; margin-top: 8px;">
-                  <div class="progress-fill" [style.width.%]="role.suitability"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Career Roadmap - NEW Section -->
-          <div class="card" *ngIf="results().career_roadmap">
-            <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; color: #7c3aed;">🗺️ Career Progression Roadmap</h3>
-            <div
-              style="background: #f5f3ff; border-left: 4px solid #7c3aed; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-              <p style="font-size: 0.8rem; text-transform: uppercase; color: #7c3aed; font-weight: 700;">Target Next
-                Level</p>
-              <p style="font-size: 1.25rem; font-weight: 800; color: #4c1d95;">{{
-                results().career_roadmap.target_next_level }}</p>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-              <div *ngFor="let step of results().career_roadmap.steps; let i = index"
-                style="display: flex; gap: 1rem; align-items: flex-start;">
-                <div
-                  style="width: 28px; height: 28px; background: #7c3aed; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 700; font-size: 0.8rem;">
-                  {{ i + 1 }}
-                </div>
-                <div style="font-size: 0.95rem; color: var(--text-main); padding-top: 4px;">{{ step }}</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cover Letter Generator -->
-          <div class="card">
-            <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">✉️ Smart Cover Letter Generator</h3>
-            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
-              Create a data-driven cover letter tailored specifically to this job description.
-            </p>
-            <button class="btn-primary" (click)="onGenerateLetter()" [disabled]="isGeneratingLetter()">
-              {{ isGeneratingLetter() ? 'Generating...' : 'Generate Tailored Cover Letter' }}
-            </button>
-
-            <div *ngIf="coverLetter()" style="margin-top: 1.5rem; animation: fadeIn 0.3s ease;">
-              <textarea class="jd-textarea"
-                style="height: 300px; font-size: 0.9rem; background: #fff; border-color: var(--primary);"
-                readonly>{{ coverLetter() }}</textarea>
-              <button class="btn-primary" style="margin-top: 0.5rem; background: #94a3b8;"
-                (click)="coverLetter.set('')">Close Letter</button>
-            </div>
+        <div style="margin-bottom: 2rem;">
+          <label class="info-item"
+            style="margin-bottom: 0.75rem; display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Core
+            Technologies</label>
+          <div class="pill-group">
+            <span class="pill pill-primary" *ngFor="let skill of recruiterInsights().key_sections.skills.technical">{{
+              skill }}</span>
           </div>
         </div>
 
-        <!-- Sidebar Column -->
-        <div class="sidebar-column">
-
-          <div class="card" *ngIf="results().tone_analysis">
-            <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">🗣️ Tone & Voice Scan</h3>
-            <div class="metric-card" style="margin-bottom: 1rem;">
-              <div class="metric-header">
-                <span>Active Voice Score</span>
-                <span>{{ results().tone_analysis.score }}%</span>
-              </div>
-              <div class="progress-track">
-                <div class="progress-fill" [style.width.%]="results().tone_analysis.score"></div>
-              </div>
-            </div>
-            <p style="font-size: 0.75rem; color: var(--text-muted)"
-              *ngIf="results().tone_analysis.passive_sentences_count > 0">
-              Found {{ results().tone_analysis.passive_sentences_count }} sentences using passive voice. Use stronger
-              action verbs.
-            </p>
+        <div style="margin-bottom: 2rem;">
+          <label class="info-item"
+            style="margin-bottom: 0.75rem; display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Infrastructure
+            & Tooling</label>
+          <div class="pill-group">
+            <span class="pill pill-primary" *ngFor="let skill of recruiterInsights().key_sections.skills.tools">{{ skill
+              }}</span>
           </div>
-
-          <div class="card" *ngIf="results().readability">
-            <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">📖 Readability Atlas</h3>
-            <div style="font-size: 0.875rem;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                <span>Reading Ease</span>
-                <strong>{{ results().readability.flesch_reading_ease | number:'1.1-1' }}</strong>
-              </div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                <span>Grade Level</span>
-                <strong>Grade {{ results().readability.grade_level }}</strong>
-              </div>
-              <div style="display: flex; justify-content: space-between;">
-                <span>Reading Time</span>
-                <strong>{{ results().readability.reading_time | number:'1.0-0' }}s</strong>
-              </div>
-            </div>
-          </div>
-
-          <!-- Impact Analysis -->
-          <div class="card" *ngIf="results().impact_analysis">
-            <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">⚡ Impact Stats</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-              <div style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; text-align: center;">
-                <p style="font-size: 1.25rem; font-weight: 700;">{{ results().impact_analysis.verbs_found }}</p>
-                <p style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Action Verbs</p>
-              </div>
-              <div style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; text-align: center;">
-                <p style="font-size: 1.25rem; font-weight: 700;">{{ results().impact_analysis.metrics_found }}</p>
-                <p style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Metrics</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="card" *ngIf="reports()">
-            <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">📥 Project Outputs</h3>
-            <div class="download-group">
-              <a [href]="getDownloadUrl(reports().text)" class="download-link" target="_blank">Text Report</a>
-              <a [href]="getDownloadUrl(reports().json)" class="download-link" target="_blank">JSON Data</a>
-              <a [href]="getDownloadUrl(reports().excel)" class="download-link" target="_blank">Excel Sheet</a>
-            </div>
-          </div>
-
-          <button class="btn-primary" (click)="scrollToTop()"
-            style="background: #e2e8f0; color: #475569; margin-top: 1rem;">
-            ↑ Back to Top
-          </button>
         </div>
+
+        <div>
+          <label class="info-item"
+            style="margin-bottom: 0.75rem; display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Professional
+            Competencies</label>
+          <div class="pill-group">
+            <span class="pill" *ngFor="let skill of recruiterInsights().key_sections.skills.soft_skills">{{ skill
+              }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quality & Improvements -->
+      <div class="card" *ngIf="recruiterInsights()">
+        <h2 class="section-title">Evaluation Metrics</h2>
+
+        <div style="margin-bottom: 2.5rem;">
+          <label class="info-item"
+            style="color: var(--success); margin-bottom: 1rem; display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Identified
+            Strengths</label>
+          <div class="status-list">
+            <div class="status-item success" *ngFor="let s of recruiterInsights().resume_quality.strengths">
+              <span>✓ {{ s }}</span>
+            </div>
+            <div *ngIf="!recruiterInsights().resume_quality.strengths.length"
+              style="color: var(--text-secondary); font-size: 0.95rem;">No major strengths identified.</div>
+          </div>
+        </div>
+
+        <div>
+          <label class="info-item"
+            style="color: var(--warning); margin-bottom: 1rem; display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Strategic
+            Improvements</label>
+          <div class="status-list">
+            <div class="status-item warning"
+              *ngFor="let s of recruiterInsights().improvement_suggestions.content_improvements">
+              <span>• {{ s }}</span>
+            </div>
+            <div class="status-item danger"
+              *ngFor="let s of recruiterInsights().resume_quality.missing_or_unclear_information">
+              <span>! Missing Integrity: {{ s | titlecase }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Growth Roadmap -->
+      <div class="card" *ngIf="results().career_roadmap">
+        <h2 class="section-title">Professional Trajectory</h2>
+        <div style="background: var(--primary-light); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+          <label
+            style="font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase; margin-bottom: 0.5rem; display: block;">Target
+            Next Horizon</label>
+          <p style="font-size: 1.25rem; font-weight: 700; color: var(--primary);">{{
+            results().career_roadmap.target_next_level }}</p>
+        </div>
+
+        <div class="status-list">
+          <div *ngFor="let step of results().career_roadmap.steps; let i = index"
+            style="display: flex; gap: 1.5rem; align-items: flex-start; padding: 1.5rem; border-bottom: 1px solid var(--border-subtle);">
+            <div style="font-weight: 800; color: var(--primary); font-size: 1rem;">0{{ i + 1 }}</div>
+            <div style="font-size: 1rem; color: var(--text-primary); font-weight: 500;">{{ step }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="footer-actions">
+        <button class="btn-secondary" (click)="results.set(null)">New Analysis</button>
+        <button class="btn-primary" style="width: auto;" (click)="scrollToTop()">Return to Top</button>
       </div>
     </div>
   </main>

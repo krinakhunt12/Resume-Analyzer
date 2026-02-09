@@ -241,6 +241,18 @@ DETAILED SCORES:
                 df_recommendations.to_excel(writer, sheet_name='Recommendations', index=False)
             
             return filepath
+        else:
+            # Generate in-memory for "no-save" mode
+            from io import BytesIO
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df_summary.to_excel(writer, sheet_name='Summary', index=False)
+                df_scores.to_excel(writer, sheet_name='Scores', index=False)
+                if not df_skills.empty:
+                    df_skills.to_excel(writer, sheet_name='Skills', index=False)
+                df_recommendations.to_excel(writer, sheet_name='Recommendations', index=False)
+            output.seek(0)
+            return output
         
         return None
     
