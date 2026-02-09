@@ -185,6 +185,102 @@ class ResumeParser:
             'unique_words': len(set(words)),
             'sentences': len(re.findall(r'[.!?]+', text))
         }
+
+    def extract_experience_timeline(self, text):
+        """
+        Extract detailed timeline from experience section
+        """
+        from datetime import datetime
+        
+        text_lower = text.lower()
+        month_map = {
+            'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
+            'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
+            'january': 1, 'february': 2, 'march': 3, 'april': 4, 'may': 5, 'june': 6,
+            'july': 7, 'august': 8, 'september': 9, 'october': 10, 'november': 11, 'december': 12,
+            'sept': 9 
+        }
+        
+        timeline = []
+        total_months = 0
+        risks = []
+        
+        current_year = datetime.now().year
+        current_month = datetime.now().month
+
+        # Regex for dates: "Jan 2020 - Present", "01/2019 to 03/2021"
+        try:
+           date_pattern = r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?|(?:\d{1,2}[/-]))?\s*(\d{4})\s*(?:-|to|until)\s*((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?|(?:\d{1,2}[/-]))?\s*(\d{4}|Present|Current|Now)'
+           matches = re.findall(date_pattern, text, re.IGNORECASE)
+        except:
+           matches = []
+        
+        parsed_ranges = []
+
+        for match in matches:
+            # (start_month, start_year, end_month, end_year)
+            # Findall returns tuple of groups
+            # Unpack robustly
+            if len(match) < 4: continue
+            
+            s_m_str, s_y_str, e_m_str, e_y_str = match[0], match[1], match[2], match[3]
+            
+            try:
+                # Start Date
+                s_month = 1
+                if s_m_str:
+                    clean_s = re.sub(r'[^a-zA-Z0-9]', '', s_m_str).lower()[:3]
+                    if clean_s.isdigit():
+                        s_month = int(clean_s)
+                    else:
+                        s_month = month_map.get(clean_s, 1)
+                
+                s_year = int(s_y_str)
+                
+                # End Date
+                e_month = 12
+                e_year = current_year
+                
+                if e_y_str.lower() in ['present', 'current', 'now']:
+                    e_month = current_month
+                    e_year = current_year
+                else:
+                    e_year = int(e_y_str)
+                    if e_m_str:
+                        clean_e = re.sub(r'[^a-zA-Z0-9]', '', e_m_str).lower()[:3]
+                        if clean_e.isdigit():
+                            e_month = int(clean_e)
+                        else:
+                            e_month = month_map.get(clean_e, 12)
+
+                # Duration
+                months = (e_year - s_year) * 12 + (e_month - s_month)
+                
+                if months > 0 and months < 480: # Valid range (0 to 40 years)
+                    parsed_ranges.append({
+                        'start': f"{s_month}/{s_year}",
+                        'end': f"{e_month}/{e_year}" if e_y_str.lower() not in ['present','current','now'] else "Present",
+                        'months': months,
+                        'years': round(months/12, 1)
+                    })
+                    total_months += months
+            except:
+                continue
+                
+        # Basic Risk analysis
+        if total_months > 0:
+            avg_tenure = total_months / len(parsed_ranges) if parsed_ranges else 0
+            if avg_tenure < 12 and len(parsed_ranges) > 1:
+                risks.append("Job Hopping: Average tenure < 1 year")
+            elif any(r['months'] > 60 for r in parsed_ranges):
+                 risks.append("Stability: High retention (> 5 years)")
+        
+        return {
+            'roles': parsed_ranges,
+            'total_experience_months': total_months,
+            'total_years': round(total_months / 12, 1),
+            'risks': risks
+        }
     
     def parse(self, text):
         """
@@ -202,6 +298,7 @@ class ResumeParser:
             'skills': self.extract_skills(text),
             'education': self.extract_education(text),
             'experience': self.extract_experience(text),
+            'timeline': self.extract_experience_timeline(text),
             'sections': self.detect_sections(text),
             'statistics': self.get_word_count(text)
         }

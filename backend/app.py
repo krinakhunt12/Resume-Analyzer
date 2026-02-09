@@ -9,6 +9,9 @@ import os
 import sys
 from werkzeug.utils import secure_filename
 import json
+import tempfile
+import re
+import datetime
 
 # Add src directory to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
@@ -17,8 +20,6 @@ from src.text_extractor import TextExtractor
 from src.resume_parser import ResumeParser
 from src.ats_analyzer import ATSAnalyzer
 from src.report_generator import ReportGenerator
-
-import tempfile
 
 app = Flask(__name__)
 CORS(app) # Enable CORS for all routes
@@ -108,8 +109,9 @@ def analyze():
         
         # 1. Candidate Details
         experience_data = parsed_resume.get('experience', {})
+        timeline_data = parsed_resume.get('timeline', {})
         years_list = experience_data.get('years_mentioned', [])
-        total_years = years_list[0] if years_list else "Not explicitly stated"
+        total_years = timeline_data.get('total_experience_years') or (years_list[0] if years_list else "Not explicitly stated")
         
         contact_info = parsed_resume.get('contact_info', {})
         emails = contact_info.get('emails', [])
@@ -156,6 +158,13 @@ def analyze():
             'content_improvements': roadmap.get('steps', [])
         }
         
+        # 6. Advanced Visualization Items (New Phase 2)
+        skill_heatmap = {
+            'technical': len(key_sections['skills']['technical']),
+            'tools': len(key_sections['skills']['tools']),
+            'soft': len(key_sections['skills']['soft_skills'])
+        }
+        
         # Prepare reports for compatibility (in-memory names)
         reports = {
             'text': f"{resume_filename.rsplit('.', 1)[0]}_report.txt",
@@ -195,7 +204,9 @@ def analyze():
                 'key_sections': key_sections,
                 'resume_quality': resume_quality,
                 'ats_compatibility': ats_compatibility,
-                'improvement_suggestions': improvement_suggestions
+                'improvement_suggestions': improvement_suggestions,
+                'timeline': timeline_data, # New Timeline Data
+                'skill_heatmap': skill_heatmap  # New Heatmap Data
             }
         }
         
@@ -205,25 +216,10 @@ def analyze():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
-@app.route('/download/<filename>')
-def download(filename):
-    """Download report file"""
-    try:
-        filepath = os.path.join(app.config['RESULTS_FOLDER'], filename)
-        if os.path.exists(filepath):
-            return send_file(filepath, as_attachment=True)
-        else:
-            return jsonify({'error': 'File not found'}), 404
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
 @app.route('/health')
 def health():
     """Health check endpoint"""
     return jsonify({'status': 'healthy'})
-
 
 @app.route('/generate-cover-letter', methods=['POST'])
 def generate_cover_letter():
@@ -239,27 +235,248 @@ def generate_cover_letter():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/generate-ats-pdf', methods=['POST'])
-def generate_ats_pdf():
-    """Generate and return an ATS-friendly PDF"""
-    # This would normally use reportlab to create a clean PDF
-    # For now, we'll return a Success message and generate a plain text file for simplicity
-    # or use reportlab if possible. Let's provide a basic implementation.
+
+@app.route('/compare-jobs', methods=['POST'])
+def compare_jobs():
+    """Compare resume against multiple job descriptions"""
     try:
-        data = request.json
-        text = data.get('text', '')
-        filename = f"ATS_Friendly_{secure_filename(data.get('name', 'Resume'))}.txt"
-        filepath = os.path.join(app.config['RESULTS_FOLDER'], filename)
-        
-        # Strip simple formatting but keep structure
-        clean_text = re.sub(r'[^\x00-\x7F]+', ' ', text) # Remove non-ascii
-        
-        with open(filepath, 'w', encoding='utf-8') as f:
-            f.write(clean_text)
+        # Check for resume
+        if 'resume' not in request.files:
+            return jsonify({'error': 'No resume file provided'}), 400
             
-        return jsonify({'success': True, 'filename': filename})
+        resume_file = request.files['resume']
+        
+        # Handle JDs (Expect list of text or multiple files)
+        # For simplicity, we'll accept a form field 'job_descriptions' which is a JSON list of strings
+        # OR multiple file uploads with name 'jd_files'
+        
+        jds = []
+        
+        # 1. Check for JSON text list
+        if 'job_descriptions' in request.form:
+            try:
+                jds = json.loads(request.form['job_descriptions'])
+            except:
+                pass
+                
+        # 2. Check for JD files
+        if 'jd_files' in request.files:
+            files = request.files.getlist('jd_files')
+            for f in files:
+                if f.filename != '':
+                    filename = secure_filename(f.filename)
+                    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    f.save(path)
+                    text = extractor.extract(path)
+                    jds.append(text)
+                    if os.path.exists(path): os.remove(path)
+        
+        if not jds:
+            return jsonify({'error': 'No job descriptions provided'}), 400
+            
+        # Process Resume Logic (Single Extraction)
+        resume_filename = secure_filename(resume_file.filename)
+        resume_path = os.path.join(app.config['UPLOAD_FOLDER'], resume_filename)
+        resume_file.save(resume_path)
+        resume_text = extractor.extract(resume_path)
+        if os.path.exists(resume_path): os.remove(resume_path)
+        
+        parsed_resume = parser.parse(resume_text)
+        
+        comparison_results = []
+        for i, jd_text in enumerate(jds):
+            # Run lightweight analysis
+            res = analyzer.analyze(resume_text, parsed_resume, jd_text)
+            comparison_results.append({
+                'id': i + 1,
+                'score': res['overall_score'],
+                'rating': res['rating'],
+                'missing_keywords': res.get('keyword_match', {}).get('missing_keywords', [])[:5]
+            })
+            
+        return jsonify({
+            'success': True,
+            'comparison': comparison_results
+        })
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/chat', methods=['POST'])
+def chat_with_ai():
+    """
+    AI Career Assistant Chat Endpoint
+    Currently uses mock logic, ready for OpenAI/Gemini integration.
+    """
+    try:
+        data = request.json
+        message = data.get('message', '').lower()
+        context = data.get('context', {}) # Resume data, current score, etc.
+        
+        # Mock Logic / Placeholder for LLM
+        response = ""
+        
+        if "summary" in message:
+            response = "Your professional summary should be 3-4 lines long and highlight your unique value proposition. Try starting with 'Results-oriented Software Engineer with 5+ years of experience in...'."
+        elif "skill" in message or "python" in message or "java" in message:
+            response = "Based on your resume, you have strong technical skills. Consider adding more 'Tools' like Docker, Kubernetes, or AWS if you have experience with them, as they are highly requested."
+        elif "fix" in message or "improve" in message:
+            response = "I recommend focusing on your 'Work Experience' section. Ensure every bullet point starts with a strong action verb (e.g., Led, Developed, Optimized) and includes a metric."
+        elif "hello" in message or "hi" in message:
+            response = "Hello! I'm your AI Career Assistant. How can I help you optimize your resume today?"
+        else:
+            response = "That's a great question. To improve your ATS score, focus on keyword optimization matching the job description. detailed metrics in your experience, and simple formatting."
+            
+        return jsonify({'response': response, 'role': 'assistant'})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/analyze-linkedin', methods=['POST'])
+def analyze_linkedin():
+    """
+    Analyze LinkedIn Profile Text
+    """
+    try:
+        data = request.json
+        profile_text = data.get('text', '')
+        
+        if not profile_text:
+            return jsonify({'error': 'No text provided'}), 400
+            
+        # 1. Basic parsing (reuse resume parser logic partially)
+        # LinkedIn text often has "About", "Experience", etc.
+        parsed = parser.parse(profile_text)
+        
+        # 2. LinkedIn specific checks
+        # - Banner/Headline check (heuristics)
+        has_headline = len(parsed['name'].split()) > 2 # Rough proxy
+        
+        # - About section length
+        about_score = 0
+        if parsed['sections'].get('summary'): # Parser detects summary/about
+             about_score = 100
+        
+        # - Experience detailedness
+        exp_score = 0
+        if parsed['experience'].get('years_mentioned'):
+             exp_score = 80
+             
+        score = (about_score + exp_score + (100 if has_headline else 50)) / 3
+        
+        insights = {
+            'overall_score': round(score, 0),
+            'headline_strength': 'Strong' if has_headline else 'Weak (Add keywords)',
+            'about_section': 'Good length' if about_score > 0 else 'Missing or too short',
+            'recommendations': [
+                "Add a custom banner image",
+                "Ensure your headline includes your target role keywords",
+                "Request recommendations from colleagues"
+            ]
+        }
+        
+        return jsonify({'success': True, 'insights': insights})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/generate-ats-pdf', methods=['POST'])
+def generate_ats_pdf():
+    """
+    Generate a user-friendly PDF report with easy-to-understand changes.
+    Uses reportlab to create the PDF.
+    """
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        results = data.get('results', {})
+        filename = f"Resume_Analysis_Report_{int(datetime.datetime.now().timestamp())}.pdf"
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
+        from reportlab.lib.pagesizes import letter
+        from reportlab.pdfgen import canvas
+        from reportlab.lib import colors
+        
+        c = canvas.Canvas(filepath, pagesize=letter)
+        width, height = letter
+        
+        # Header
+        c.setFont("Helvetica-Bold", 18)
+        c.setFillColor(colors.HexColor("#2563eb")) # Primary Blue
+        c.drawString(50, height - 50, "Resume Analysis Report")
+        
+        c.setFont("Helvetica", 10)
+        c.setFillColor(colors.black)
+        c.drawString(50, height - 70, f"Generated on: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}")
+        
+        # Overall Score
+        score = results.get('overall_score', 0)
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(50, height - 100, f"Overall ATS Score: {score}/100")
+        
+        # Draw Score Bar
+        c.setFillColor(colors.lightgrey)
+        c.rect(50, height - 120, 200, 10, fill=1)
+        c.setFillColor(colors.HexColor("#22c55e") if score > 70 else colors.HexColor("#ef4444"))
+        c.rect(50, height - 120, 2 * score, 10, fill=1)
+        
+        # Easy Language Recommendations
+        y_position = height - 160
+        c.setFillColor(colors.black)
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(50, y_position, "Top 3 Easy Fixes for Immediate Impact:")
+        y_position -= 25
+        
+        recommendations = results.get('recommendations', [])
+        c.setFont("Helvetica", 11)
+        
+        if not recommendations:
+            c.drawString(70, y_position, "• Great job! Your resume looks strong.")
+            y_position -= 20
+        else:
+            for rec in recommendations[:5]: # Top 5
+                # Simple text wrapping logic
+                lines = [rec[i:i+80] for i in range(0, len(rec), 80)]
+                for line in lines:
+                    c.drawString(70, y_position, f"• {line}")
+                    y_position -= 15
+                y_position -= 5
+                
+        # Detailed Section Breakdown
+        y_position -= 20
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(50, y_position, "Section Breakdown:")
+        y_position -= 25
+        c.setFont("Helvetica", 11)
+        
+        parsed_scores = results.get('scores', {})
+        for key, val in parsed_scores.items():
+            name = key.replace('_', ' ').title()
+            c.drawString(70, y_position, f"{name}: {val}/100")
+            y_position -= 15
+
+        # Footer
+        c.setFont("Helvetica-Oblique", 9)
+        c.setFillColor(colors.grey)
+        c.drawString(50, 30, "Generated by Resume Analyzer Pro - Your AI Career Assistant")
+        
+        c.save()
+        
+        return jsonify({
+            'success': True, 
+            'download_url': f"http://localhost:5000/download/{filename}"
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/download/<filename>')
+def download_file(filename):
+    return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename), as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
