@@ -328,7 +328,14 @@ class ATSAnalyzer:
         # 7. Advanced Analysis - Link Validation
         results['link_validation'] = self.advanced.validate_links(parsed_resume.get('contact_info', {}))
         
-        # 8. Experience Relevance (Basic heuristic for now)
+        # 8. Advanced Analysis - Role Suitability & Roadmap
+        results['role_suitability'] = self.advanced.identify_role_suitability(parsed_resume.get('skills', {}))
+        results['career_roadmap'] = self.advanced.generate_roadmap(
+            results['career_analysis'].get('seniority_level', 'Entry-Level'),
+            results['role_suitability']
+        )
+        
+        # 9. Experience Relevance (Basic heuristic for now)
         exp = parsed_resume.get('experience', {})
         exp_score = 50
         if exp.get('has_experience_section'): exp_score += 20

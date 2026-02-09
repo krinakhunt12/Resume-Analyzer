@@ -17,6 +17,8 @@ from src.ats_analyzer import ATSAnalyzer
 from src.report_generator import ReportGenerator
 
 
+import tempfile
+
 class ATSResumeAnalyzer:
     """Main application class"""
     
@@ -24,7 +26,11 @@ class ATSResumeAnalyzer:
         self.extractor = TextExtractor()
         self.parser = ResumeParser()
         self.analyzer = ATSAnalyzer()
-        self.report_generator = ReportGenerator(output_dir='data/results')
+        
+        # Use system temp directory for transient data
+        self.results_dir = os.path.join(tempfile.gettempdir(), 'resume_analyzer', 'results')
+        os.makedirs(self.results_dir, exist_ok=True)
+        self.report_generator = ReportGenerator(output_dir=self.results_dir)
     
     def analyze_resume(self, resume_path, job_description_path=None, output_format='all'):
         """

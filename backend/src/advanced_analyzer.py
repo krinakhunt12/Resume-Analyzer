@@ -135,6 +135,61 @@ class AdvancedAnalyzer:
         
         return results
 
+    def identify_role_suitability(self, skills):
+        """Map skills to professional job roles and calculate suitability"""
+        all_skills = [s.lower() for s in skills.get('all_technical', [])]
+        
+        roles_database = {
+            'Full Stack Developer': ['html', 'css', 'javascript', 'react', 'node', 'database', 'git', 'api', 'typescript', 'frontend', 'backend'],
+            'Data Scientist': ['python', 'statistics', 'machine learning', 'sql', 'pandas', 'numpy', 'scikit-learn', 'data visualization', 'r', 'mathematics'],
+            'DevOps Engineer': ['docker', 'kubernetes', 'aws', 'ci/cd', 'linux', 'terraform', 'jenkins', 'cloud', 'azure', 'ansible', 'automation'],
+            'Product Manager': ['agile', 'scrum', 'strategy', 'roadmap', 'stakeholder', 'user experience', 'market research', 'analytics', 'product lifecycle'],
+            'Cybersecurity Analyst': ['security', 'network', 'firewall', 'penetration testing', 'encryption', 'compliance', 'cyber', 'vulnerability', 'incident response']
+        }
+        
+        matches = []
+        for role, req_skills in roles_database.items():
+            overlap = [s for s in all_skills if any(req in s for req in req_skills)]
+            suitability = (len(overlap) / len(req_skills)) * 100
+            matches.append({
+                'role': role,
+                'suitability': round(suitability, 2),
+                'matched_core_skills': overlap[:3]
+            })
+            
+        # Sort by suitability
+        matches.sort(key=lambda x: x['suitability'], reverse=True)
+        return matches[:3]
+
+    def generate_roadmap(self, seniority, roles_data):
+        """Generate next-step career advice based on seniority and current trajectory"""
+        roadmap = []
+        top_role = roles_data[0]['role'] if roles_data else "Software Professional"
+        
+        if "Entry" in seniority:
+            roadmap = [
+                f"Obtain a professional certification in {top_role}",
+                "Build 2 high-quality portfolio projects demonstrating end-to-end execution",
+                "Focus on 'Clean Code' principles and Version Control (Git) mastery"
+            ]
+        elif "Mid" in seniority:
+            roadmap = [
+                "Develop mentorship skills by contributing to open-source or helping juniors",
+                "Deep dive into System Design and Scalability patterns",
+                "Take ownership of a major project lifecycle from conception to deployment"
+            ]
+        else: # Senior
+            roadmap = [
+                "Strategy: Focus on cross-functional leadership and stakeholder management",
+                "System Architecture: Influence long-term technical debt and architectural decisions",
+                "Public Presence: Speak at conferences or write technical blogs to establish authority"
+            ]
+            
+        return {
+            'target_next_level': "Senior Professional" if "Mid" in seniority else ("Architect / Manager" if "Senior" in seniority else "Mid-Level Professional"),
+            'steps': roadmap
+        }
+
     def generate_cover_letter(self, name, skills, jd):
         """Generate a basic tailored cover letter template"""
         top_skills = skills.get('all_technical', [])[:5]

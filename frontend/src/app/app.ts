@@ -68,7 +68,7 @@ export class App {
     }
 
     this.atsService.analyzeResume(formData).subscribe({
-      next: (data) => {
+      next: (data: any) => {
         this.results.set(data.results);
         this.reports.set(data.reports);
         this.isLoading.set(false);
@@ -76,7 +76,7 @@ export class App {
           document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.errorMsg.set(err.error?.error || 'An error occurred during analysis.');
         this.isLoading.set(false);
       }
@@ -92,7 +92,7 @@ export class App {
       job_description: this.jdText()
     };
     this.atsService.generateCoverLetter(data).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.coverLetter.set(res.cover_letter);
         this.isGeneratingLetter.set(false);
       },

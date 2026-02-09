@@ -18,20 +18,29 @@ from src.resume_parser import ResumeParser
 from src.ats_analyzer import ATSAnalyzer
 from src.report_generator import ReportGenerator
 
+import tempfile
+
 app = Flask(__name__)
 CORS(app) # Enable CORS for all routes
-app.config['UPLOAD_FOLDER'] = 'data/uploads'
+
+# Use system temp directory for transient data
+base_temp = os.path.join(tempfile.gettempdir(), 'resume_analyzer')
+os.makedirs(base_temp, exist_ok=True)
+
+app.config['UPLOAD_FOLDER'] = os.path.join(base_temp, 'uploads')
+app.config['RESULTS_FOLDER'] = os.path.join(base_temp, 'results')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 app.config['ALLOWED_EXTENSIONS'] = {'pdf', 'docx', 'doc'}
 
-# Create upload folder if it doesn't exist
+# Create folders if they don't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(app.config['RESULTS_FOLDER'], exist_ok=True)
 
 # Initialize components
 extractor = TextExtractor()
 parser = ResumeParser()
 analyzer = ATSAnalyzer()
-report_generator = ReportGenerator(output_dir='data/results')
+report_generator = ReportGenerator(output_dir=app.config['RESULTS_FOLDER'])
 
 
 def allowed_file(filename):
@@ -64,6 +73,10 @@ def analyze():
         # Extract resume text
         resume_text = extractor.extract(resume_path)
         
+        # Delete uploaded resume after extraction
+        if os.path.exists(resume_path):
+            os.remove(resume_path)
+        
         # Handle job description
         job_description = ""
         if 'job_description' in request.files:
@@ -73,6 +86,10 @@ def analyze():
                 jd_path = os.path.join(app.config['UPLOAD_FOLDER'], jd_filename)
                 jd_file.save(jd_path)
                 job_description = extractor.extract(jd_path)
+                
+                # Delete uploaded JD after extraction
+                if os.path.exists(jd_path):
+                    os.remove(jd_path)
         elif 'job_description_text' in request.form:
             job_description = request.form['job_description_text']
         
@@ -131,7 +148,7 @@ def analyze():
 def download(filename):
     """Download report file"""
     try:
-        filepath = os.path.join('data/results', filename)
+        filepath = os.path.join(app.config['RESULTS_FOLDER'], filename)
         if os.path.exists(filepath):
             return send_file(filepath, as_attachment=True)
         else:
@@ -170,7 +187,7 @@ def generate_ats_pdf():
         data = request.json
         text = data.get('text', '')
         filename = f"ATS_Friendly_{secure_filename(data.get('name', 'Resume'))}.txt"
-        filepath = os.path.join('data/results', filename)
+        filepath = os.path.join(app.config['RESULTS_FOLDER'], filename)
         
         # Strip simple formatting but keep structure
         clean_text = re.sub(r'[^\x00-\x7F]+', ' ', text) # Remove non-ascii

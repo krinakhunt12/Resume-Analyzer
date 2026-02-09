@@ -27,10 +27,7 @@ coverage.xml
 .pytest_cache/
 
 # Data
-data/uploads/*
-data/results/*
-!data/uploads/.gitkeep
-!data/results/.gitkeep
+data/
 
 # OS
 .DS_Store

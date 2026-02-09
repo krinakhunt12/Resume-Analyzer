@@ -138,6 +138,54 @@
             </div>
           </div>
 
+          <!-- Role Suitability - NEW Section -->
+          <div class="card" *ngIf="results().role_suitability?.length">
+            <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--primary);">🎯 Strategic Role Suitability
+            </h3>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+              <div *ngFor="let role of results().role_suitability"
+                style="background: #f8fafc; border: 1px solid var(--border-color); padding: 1rem; border-radius: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <strong style="font-size: 1rem; color: var(--text-main);">{{ role.role }}</strong>
+                  <span class="rating-tag"
+                    [style.background]="role.suitability > 70 ? '#d1fae5' : (role.suitability > 40 ? '#fef9c3' : '#f1f5f9')"
+                    [style.color]="role.suitability > 70 ? '#065f46' : (role.suitability > 40 ? '#854d0e' : '#475569')">
+                    {{ role.suitability }}% Match
+                  </span>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
+                  Matched core expertise: {{ role.matched_core_skills?.join(', ') || 'General experience' }}
+                </p>
+                <div class="progress-track" style="height: 6px; margin-top: 8px;">
+                  <div class="progress-fill" [style.width.%]="role.suitability"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Career Roadmap - NEW Section -->
+          <div class="card" *ngIf="results().career_roadmap">
+            <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; color: #7c3aed;">🗺️ Career Progression Roadmap</h3>
+            <div
+              style="background: #f5f3ff; border-left: 4px solid #7c3aed; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+              <p style="font-size: 0.8rem; text-transform: uppercase; color: #7c3aed; font-weight: 700;">Target Next
+                Level</p>
+              <p style="font-size: 1.25rem; font-weight: 800; color: #4c1d95;">{{
+                results().career_roadmap.target_next_level }}</p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <div *ngFor="let step of results().career_roadmap.steps; let i = index"
+                style="display: flex; gap: 1rem; align-items: flex-start;">
+                <div
+                  style="width: 28px; height: 28px; background: #7c3aed; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 700; font-size: 0.8rem;">
+                  {{ i + 1 }}
+                </div>
+                <div style="font-size: 0.95rem; color: var(--text-main); padding-top: 4px;">{{ step }}</div>
+              </div>
+            </div>
+          </div>
+
           <!-- Cover Letter Generator -->
           <div class="card">
             <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">✉️ Smart Cover Letter Generator</h3>

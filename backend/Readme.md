@@ -37,10 +37,12 @@ ats_resume_analyzer/
 │   └── index.html              # Web interface template
 │
 ├── data/
-│   ├── resumes/                # Place resume files here
-│   ├── job_descriptions/       # Place job description files here
-│   ├── results/                # Generated reports saved here
-│   └── uploads/                # Temporary uploads (web interface)
+│   ├── resumes/                # (Optional) Local resumes
+│   ├── job_descriptions/       # (Optional) Local job descriptions
+│   ├── results/                # (Internal) Ignored by git
+│   └── uploads/                # (Internal) Ignored by git
+│
+# Note: In the web interface, resumes are processed in-memory/temp folders and deleted immediately after extraction for privacy.
 │
 └── tests/
     └── (unit tests)
