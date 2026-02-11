@@ -40,7 +40,7 @@
       <!-- STEP 1: UPLOAD FLOW -->
       <section *ngIf="currentStep() === 1">
         <div class="card">
-          <h2 class="section-title"><span>📎</span> Resume Document</h2>
+          <h3 class="section-title"><span>📎</span> Resume Document</h3>
           <div class="upload-container" (click)="fileInput.click()" (dragover)="$event.preventDefault()"
             (drop)="onFileChange($event, 'resume')">
             <div class="upload-icon">📤</div>
@@ -51,23 +51,21 @@
           </div>
 
           <!-- Collapsible JD -->
-          <div style="margin-top: 2rem; border-top: 1px solid var(--border-main); padding-top: 1.5rem;">
-            <div (click)="showJd.set(!showJd())"
-              style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: var(--text-secondary);">
-              <span style="font-weight: 500; font-size: 0.9rem;">Target Job Description (Optional)</span>
+          <div style="margin-top: 2.5rem; border-top: 1px solid var(--border-main); padding-top: 1.5rem;">
+            <div (click)="showJd.set(!showJd())" class="collapsible-trigger">
+              <span>Target Job Description (Optional)</span>
               <span>{{ showJd() ? '−' : '+' }}</span>
             </div>
-            <div *ngIf="showJd()" style="margin-top: 1rem;">
-              <textarea class="card"
-                style="width: 100%; height: 120px; font-family: inherit; font-size: 0.9rem; padding: 1rem; margin-bottom: 0;"
+            <div *ngIf="showJd()" style="margin-top: 1.25rem;">
+              <textarea class="jd-textarea"
                 placeholder="Paste the job description text here for deep keyword matching..."
                 [(ngModel)]="tempJdText"></textarea>
             </div>
           </div>
         </div>
 
-        <div style="text-align: center; margin-top: 2rem;">
-          <button class="btn btn-primary" style="width: 240px;" (click)="onSubmit($event)"
+        <div style="text-align: center; margin-top: 3rem;">
+          <button class="btn btn-primary" style="min-width: 260px;" (click)="onSubmit($event)"
             [disabled]="!resumeFile() || isLoading()">
             Analyze Resume
           </button>
@@ -77,9 +75,9 @@
       <!-- STEP 2: LOADING -->
       <section *ngIf="isLoading()" class="loading-wrapper">
         <div class="spinner"></div>
-        <h3 style="font-weight: 600;">Processing Intelligence</h3>
-        <p style="color: var(--text-secondary); margin-top: 0.5rem;">Running semantic analysis and scanning for ATS
-          patterns...</p>
+        <h3 style="font-weight: 600; font-family: 'Poppins';">Processing Intelligence</h3>
+        <p style="color: var(--text-secondary); margin-top: 0.75rem; font-size: 1.1rem;">Running semantic analysis and
+          scanning for ATS patterns...</p>
       </section>
 
       <!-- STEP 3: RESULTS DASHBOARD -->
@@ -91,7 +89,7 @@
             <p class="candidate-meta">Professional Audit • {{ recruiterInsights().candidate_details.email }}</p>
           </div>
           <div [className]="getRatingClass(results().rating)" class="tag"
-            style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+            style="padding: 0.5rem 1.25rem; font-weight: 700;">
             {{ results().rating }} Match
           </div>
         </div>
@@ -99,34 +97,26 @@
         <!-- RECRUITER INSIGHTS: PROFILE CARD -->
         <div class="card" *ngIf="recruiterInsights()">
           <h3 class="section-title"><span>👤</span> Professional Profile</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+          <div class="profile-grid">
             <div>
-              <label
-                style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Experience
-                Tenure</label>
-              <p style="font-weight: 600; font-size: 1.1rem; color: var(--primary);">{{
-                recruiterInsights().candidate_details.total_years_experience }} Years</p>
+              <label class="profile-label">Experience Tenure</label>
+              <p class="profile-value-highlight">{{ recruiterInsights().candidate_details.total_years_experience }}
+                Years</p>
             </div>
             <div>
-              <label
-                style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Recent
-                Titles</label>
-              <p style="font-size: 0.9rem; color: var(--text-secondary);">{{
-                recruiterInsights().key_sections.work_experience_summary }}</p>
+              <label class="profile-label">Recent Titles</label>
+              <p class="profile-value">{{ recruiterInsights().key_sections.work_experience_summary }}</p>
             </div>
             <div *ngIf="recruiterInsights().key_sections.education.length">
-              <label
-                style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Top
-                Education</label>
-              <p style="font-size: 0.9rem; color: var(--text-secondary);">{{
-                recruiterInsights().key_sections.education[0] }}</p>
+              <label class="profile-label">Top Education</label>
+              <p class="profile-value">{{ recruiterInsights().key_sections.education[0] }}</p>
             </div>
           </div>
         </div>
 
         <div class="results-grid">
           <div class="left-col">
-            <!-- TIMELINE VISUALIZATION (Phase 5) -->
+            <!-- TIMELINE VISUALIZATION -->
             <div class="card" *ngIf="recruiterInsights()?.timeline">
               <h3 class="section-title"><span>📅</span> Experience Journey</h3>
               <div class="timeline-track">
@@ -144,36 +134,27 @@
             <!-- Skills Breakdown -->
             <div class="card">
               <h3 class="section-title"><span>🛠️</span> Skills Taxonomy</h3>
-              <div style="margin-bottom: 1.5rem;">
-                <label
-                  style="display: block; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem;">Technical
-                  Proficiencies</label>
+              <div style="margin-bottom: 2rem;">
+                <label class="skill-category-label">Technical Proficiencies</label>
                 <div class="tags">
                   <span class="tag" *ngFor="let s of recruiterInsights().key_sections.skills.technical">{{ s }}</span>
                 </div>
               </div>
 
-              <div style="margin-bottom: 1.5rem;">
-                <label
-                  style="display: block; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem;">Professional
-                  Competencies</label>
+              <div style="margin-bottom: 2rem;">
+                <label class="skill-category-label">Professional Competencies</label>
                 <div class="tags">
                   <span class="tag" *ngFor="let s of recruiterInsights().key_sections.skills.soft_skills">{{ s }}</span>
                 </div>
               </div>
 
-              <!-- SKILL HEATMAP VISUALIZATION (Phase 5) -->
-              <div style="margin-top: 2rem; border-top: 1px solid var(--border-main); padding-top: 1.5rem;">
-                <label
-                  style="display: block; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem;">Skill
-                  Density Map</label>
+              <!-- SKILL HEATMAP VISUALIZATION -->
+              <div style="margin-top: 2.5rem; border-top: 1px solid var(--border-main); padding-top: 1.5rem;">
+                <label class="skill-category-label">Skill Density Map</label>
                 <div class="heatmap-container">
-                  <div class="heatmap-square level-{{ getSkillLevel(recruiterInsights().skill_heatmap.technical) }}"
-                    data-tooltip="Tech Depth"></div>
-                  <div class="heatmap-square level-{{ getSkillLevel(recruiterInsights().skill_heatmap.tools) }}"
-                    data-tooltip="Tool Depth"></div>
-                  <div class="heatmap-square level-{{ getSkillLevel(recruiterInsights().skill_heatmap.soft) }}"
-                    data-tooltip="Soft Depth"></div>
+                  <div class="heatmap-square lv{{ getSkillLevel(recruiterInsights().skill_heatmap.technical) }}"></div>
+                  <div class="heatmap-square lv{{ getSkillLevel(recruiterInsights().skill_heatmap.tools) }}"></div>
+                  <div class="heatmap-square lv{{ getSkillLevel(recruiterInsights().skill_heatmap.soft) }}"></div>
                   <div class="heatmap-square lv1"></div>
                   <div class="heatmap-square lv2"></div>
                   <div class="heatmap-square lv1"></div>
@@ -191,73 +172,69 @@
               </div>
             </div>
 
-            <!-- LinkedIn Profile Audit (Phase 4) -->
+            <!-- LinkedIn Profile Audit -->
             <div class="card">
               <h3 class="section-title"><span>🔗</span> LinkedIn Profile Strategy</h3>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Paste your LinkedIn
-                'About' or 'Experience' text below to audit your social presence.</p>
-              <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                <textarea class="card"
-                  style="flex: 1; height: 100px; padding: 0.75rem; font-size: 0.9rem; margin-bottom: 0;"
-                  placeholder="Paste profile text..." [ngModel]="linkedInUrl()"
-                  (ngModelChange)="linkedInUrl.set($event)"></textarea>
+              <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Enhance your social
+                presence by auditing your profile content.</p>
+              <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">
+                <textarea class="linkedin-audit-textarea" placeholder="Paste LinkedIn 'About' or 'Experience' text..."
+                  [ngModel]="linkedInUrl()" (ngModelChange)="linkedInUrl.set($event)"></textarea>
               </div>
               <button class="btn btn-secondary" (click)="analyzeLinkedIn()" style="width: 100%;">Analyze Profile
                 Strength</button>
 
               <div *ngIf="linkedInResult()" class="status-card"
-                style="margin-top: 1.5rem; border-left: 4px solid var(--primary);">
-                <div style="font-weight: 700; color: var(--primary);">Social Score: {{ linkedInResult().overall_score
-                  }}/100</div>
-                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">{{
+                style="margin-top: 2rem; border-left: 4px solid var(--primary); padding: 1.5rem;">
+                <div style="font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">Social Score: {{
+                  linkedInResult().overall_score }}/100</div>
+                <p style="font-size: 0.95rem; color: var(--text-secondary); margin-top: 0.5rem;">{{
                   linkedInResult().headline_strength }} Headline • {{ linkedInResult().about_section }} Summary</p>
-                <ul style="margin-top: 0.5rem; padding-left: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+                <ul
+                  style="margin-top: 1rem; padding-left: 1.25rem; font-size: 0.9rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.5rem;">
                   <li *ngFor="let rec of linkedInResult().recommendations">{{ rec }}</li>
                 </ul>
               </div>
             </div>
 
             <!-- Strengths & Improvements -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
               <div>
                 <h3 class="section-title" style="color: var(--accent);"><span>✔️</span> Strengths</h3>
                 <div class="status-card" *ngFor="let s of recruiterInsights().resume_quality.strengths">
-                  <p style="font-size: 0.9rem; color: var(--text-secondary);">{{ s }}</p>
+                  <p style="font-size: 0.95rem; color: var(--text-secondary);">{{ s }}</p>
                 </div>
               </div>
               <div>
-                <h3 class="section-title" style="color: var(--warning);"><span>⚠️</span> Improvements</h3>
+                <h3 class="section-title" style="color: var(--danger);"><span>⚠️</span> Improvements</h3>
                 <div class="status-card"
                   *ngFor="let s of recruiterInsights().improvement_suggestions.content_improvements">
-                  <p style="font-size: 0.9rem; color: var(--text-secondary);">{{ s }}</p>
+                  <p style="font-size: 0.95rem; color: var(--text-secondary);">{{ s }}</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="right-col" style="position: sticky; top: 100px;">
+          <div class="right-col">
             <!-- ATS Score Card -->
-            <div class="card" style="border-top: 4px solid var(--primary);">
+            <div class="card" style="border-top: 4px solid var(--text-primary);">
               <h3 class="section-title"><span>📊</span> ATS Integrity</h3>
               <div class="score-visual">
                 <div class="score-circle">
                   <span class="score-number">{{ results().overall_score | number:'1.0-0' }}</span>
                   <span class="score-label">Points</span>
                 </div>
-                <p style="font-size: 0.85rem; color: var(--text-secondary); text-align: center;">Score provides a
-                  high-level matching indicator for automated systems.</p>
+                <p class="score-description">High-level semantic matching indicator for automated recruiter systems.</p>
               </div>
             </div>
 
             <!-- Career Roadmap Summary -->
             <div class="card" *ngIf="results().career_roadmap">
               <h3 class="section-title"><span>🚀</span> Next Horizon</h3>
-              <p style="font-weight: 700; color: var(--primary); margin-bottom: 1rem;">{{
-                results().career_roadmap.target_next_level }}</p>
-              <ul style="list-style: none; padding: 0;">
-                <li *ngFor="let step of results().career_roadmap.steps.slice(0, 3)"
-                  style="font-size: 0.85rem; padding: 0.5rem 0; border-top: 1px solid var(--border-main); color: var(--text-secondary);">
-                  • {{ step }}
+              <p class="roadmap-target">{{ results().career_roadmap.target_next_level }}</p>
+              <ul class="roadmap-steps">
+                <li *ngFor="let step of results().career_roadmap.steps.slice(0, 3)" class="roadmap-step">
+                  <span>•</span> {{ step }}
                 </li>
               </ul>
             </div>
@@ -265,10 +242,10 @@
         </div>
 
         <!-- Download Report Card -->
-        <div class="card download-card" style="margin-top: 3rem;">
+        <div class="card download-card" style="margin-top: 4rem;">
           <div class="download-info">
             <h3>Ready for Submission</h3>
-            <p>Download your verified professional report for recruiters.</p>
+            <p>Export your verified professional report for recruiter outreach.</p>
           </div>
           <button class="btn btn-primary" (click)="downloadReport()" [disabled]="isPdfLoading()">
             <span>⬇️</span> {{ isPdfLoading() ? 'Generating...' : 'Download Report' }}
@@ -276,35 +253,35 @@
         </div>
       </section>
 
-      <!-- STEP 4: REPORTS VIEW (Phase 4) -->
+      <!-- STEP 4: REPORTS VIEW -->
       <section *ngIf="currentStep() === 4">
-        <div class="card" style="text-align: center; padding: 4rem 2rem;">
-          <h1 style="margin-bottom: 1rem;">Expert Report Repository</h1>
-          <p style="color: var(--text-secondary); margin-bottom: 2rem;">Access and manage your generated analysis
-            reports in one place.</p>
+        <div class="card" style="text-align: center; padding: 6rem 2rem;">
+          <h1 style="margin-bottom: 1.5rem;">Report Repository</h1>
+          <p style="color: var(--text-secondary); margin-bottom: 3rem; font-size: 1.1rem;">Access and manage your
+            generated analysis reports in one place.</p>
           <div
-            style="max-width: 500px; margin: 0 auto; padding: 2rem; border: 2px dashed var(--border-main); border-radius: var(--radius-lg); color: var(--text-muted);">
-            <p>No reports generated in this session. Start an analysis to see reports here.</p>
+            style="max-width: 500px; margin: 0 auto; padding: 3rem; border: 20px dashed var(--border-main); border-radius: var(--radius-lg); color: var(--text-muted);">
+            <p>No reports found in this session.</p>
           </div>
-          <button class="btn btn-primary" style="margin-top: 2rem;" (click)="currentStep.set(1)">New Analysis</button>
+          <button class="btn btn-primary" style="margin-top: 3rem;" (click)="currentStep.set(1)">New Analysis</button>
         </div>
       </section>
 
-      <!-- STEP 5: HISTORY VIEW (Phase 1/5) -->
+      <!-- STEP 5: HISTORY VIEW -->
       <section *ngIf="currentStep() === 5">
-        <div class="card" style="text-align: center; padding: 4rem 2rem;">
-          <h1 style="margin-bottom: 1rem;">Analysis History</h1>
-          <p style="color: var(--text-secondary); margin-bottom: 2rem;">Review your past scans and optimization
-            progress.</p>
-          <div style="max-width: 600px; margin: 0 auto;">
+        <div class="card" style="text-align: center; padding: 6rem 2rem;">
+          <h1 style="margin-bottom: 1.5rem;">Analysis History</h1>
+          <p style="color: var(--text-secondary); margin-bottom: 3rem; font-size: 1.1rem;">Review your past scans and
+            optimization progress.</p>
+          <div style="max-width: 650px; margin: 0 auto;">
             <div class="status-card"
-              style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem;">
+              style="display: flex; justify-content: space-between; align-items: center; padding: 2rem;">
               <div style="text-align: left;">
-                <div style="font-weight: 700;">Current Session Resume</div>
-                <div style="font-size: 0.8rem; color: var(--text-muted);">Today • {{ resumeFileName() || 'Untitled' }}
-                </div>
+                <div style="font-weight: 700; font-size: 1.1rem;">{{ resumeFileName() || 'Untitled Session' }}</div>
+                <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem;">Active Analysis Session •
+                  Today</div>
               </div>
-              <div *ngIf="results()" style="font-weight: 800; color: var(--primary); font-size: 1.25rem;">
+              <div *ngIf="results()" style="font-weight: 800; color: var(--text-primary); font-size: 1.5rem;">
                 {{ results().overall_score | number:'1.0-0' }}%
               </div>
             </div>
@@ -316,27 +293,21 @@
     <!-- Chat Widget -->
     <button class="chat-btn" (click)="toggleChat()">💬</button>
 
-    <div *ngIf="isChatOpen()" class="card"
-      style="position: fixed; bottom: 5rem; right: 2rem; width: 350px; height: 450px; z-index: 1000; padding: 0; display: flex; flex-direction: column;">
-      <div
-        style="background: var(--primary); color: white; padding: 1rem; border-radius: var(--radius-lg) var(--radius-lg) 0 0; display: flex; align-items: center; justify-content: space-between;">
-        <span style="font-weight: 600;">AI Career Assistant</span>
-        <span (click)="toggleChat()" style="cursor: pointer;">×</span>
+    <div *ngIf="isChatOpen()" class="chat-widget-card">
+      <div class="chat-header">
+        <span>AI Career Assistant</span>
+        <span (click)="toggleChat()" style="cursor: pointer; font-size: 1.5rem;">&times;</span>
       </div>
-      <div
-        style="flex: 1; padding: 1rem; overflow-y: auto; background: var(--bg-page); display: flex; flex-direction: column; gap: 1rem;">
-        <div *ngFor="let m of chatMessages()" [style.align-self]="m.role === 'user' ? 'flex-end' : 'flex-start'"
-          [style.background]="m.role === 'user' ? 'var(--primary)' : 'white'"
-          [style.color]="m.role === 'user' ? 'white' : 'var(--text-primary)'"
-          style="max-width: 80%; padding: 0.75rem; border-radius: 12px; font-size: 0.85rem; box-shadow: var(--shadow-sm);">
+      <div class="chat-message-container">
+        <div *ngFor="let m of chatMessages()" class="chat-message" [class.chat-message-user]="m.role === 'user'"
+          [class.chat-message-ai]="m.role !== 'user'">
           {{ m.text }}
         </div>
       </div>
-      <div style="padding: 1rem; border-top: 1px solid var(--border-main); display: flex; gap: 0.5rem;">
+      <div class="chat-input-area">
         <input type="text" [(ngModel)]="tempChatInput" (keyup.enter)="sendMessage()"
-          placeholder="Ask about your resume..."
-          style="flex: 1; border: 1px solid var(--border-main); padding: 0.5rem; border-radius: 6px; outline: none; font-size: 0.9rem;">
-        <button class="btn btn-primary" style="padding: 0.5rem 1rem;" (click)="sendMessage()">Send</button>
+          placeholder="Ask about your resume..." class="chat-input-field">
+        <button class="chat-send-btn" (click)="sendMessage()">Send</button>
       </div>
     </div>
   </div>
