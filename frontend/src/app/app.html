@@ -5,8 +5,8 @@
       <span>📄</span> Resume Analyzer Pro
     </div>
     <ul class="nav-links">
-      <li><a href="#" [class.active]="currentStep() === 1" (click)="currentStep.set(1)">Analyzer</a></li>
-      <li><a href="#" [class.active]="currentStep() === 4" (click)="currentStep.set(4)">Reports</a></li>
+      <li><a href="#" [class.active]="currentStep() === 1 || currentStep() === 2 || currentStep() === 3"
+          (click)="currentStep.set(1)">New Analysis</a></li>
       <li><a href="#" [class.active]="currentStep() === 5" (click)="currentStep.set(5)">History</a></li>
     </ul>
     <div class="nav-user" (click)="toggleTheme()">
@@ -16,7 +16,7 @@
 
   <div class="app-layout">
     <!-- Hero / Progress -->
-    <header class="hero">
+    <header class="hero" *ngIf="currentStep() !== 5">
       <div class="stepper">
         <div class="step" [class.completed]="currentStep() > 1" [class.active]="currentStep() === 1">
           <div class="step-circle">1</div>
@@ -24,14 +24,14 @@
         </div>
         <div class="step" [class.completed]="currentStep() > 2" [class.active]="currentStep() === 2">
           <div class="step-circle">2</div>
-          <span class="step-label">Analyze</span>
+          <span class="step-label">Processing</span>
         </div>
         <div class="step" [class.completed]="currentStep() > 3" [class.active]="currentStep() === 3">
           <div class="step-circle">3</div>
           <span class="step-label">Insights</span>
         </div>
       </div>
-      <h1 *ngIf="currentStep() === 1">Optimize your career path.</h1>
+      <h1 *ngIf="currentStep() === 1">Optimize your career trajectory.</h1>
       <p *ngIf="currentStep() === 1">Upload your resume to receive an enterprise-grade ATS analysis and actionable
         growth insights.</p>
     </header>
@@ -40,23 +40,25 @@
       <!-- STEP 1: UPLOAD FLOW -->
       <section *ngIf="currentStep() === 1">
         <div class="card">
-          <h3 class="section-title"><span>📎</span> Resume Document</h3>
+          <h3 class="section-title"><span class="section-icon">📎</span> Resume Document</h3>
           <div class="upload-container" (click)="fileInput.click()" (dragover)="$event.preventDefault()"
             (drop)="onFileChange($event, 'resume')">
-            <div class="upload-icon">📤</div>
-            <h3>{{ resumeFile() ? resumeFileName() : 'Click to upload or drag & drop' }}</h3>
-            <p>PDF, DOCX supported • Max 16MB</p>
+            <div class="upload-content">
+              <div class="upload-icon">📤</div>
+              <h3>{{ resumeFile() ? resumeFileName() : 'Click to upload or drag & drop' }}</h3>
+              <p>PDF, DOCX supported • Max 16MB</p>
+            </div>
             <input #fileInput type="file" (change)="onFileChange($event, 'resume')" accept=".pdf,.docx"
               style="display: none">
           </div>
 
           <!-- Collapsible JD -->
-          <div style="margin-top: 2.5rem; border-top: 1px solid var(--border-main); padding-top: 1.5rem;">
+          <div style="margin-top: 3rem; border-top: 1px solid var(--border-main); padding-top: 2rem;">
             <div (click)="showJd.set(!showJd())" class="collapsible-trigger">
               <span>Target Job Description (Optional)</span>
               <span>{{ showJd() ? '−' : '+' }}</span>
             </div>
-            <div *ngIf="showJd()" style="margin-top: 1.25rem;">
+            <div *ngIf="showJd()" style="margin-top: 1.25rem; animation: slideUp 0.3s ease-out;">
               <textarea class="jd-textarea"
                 placeholder="Paste the job description text here for deep keyword matching..."
                 [(ngModel)]="tempJdText"></textarea>
@@ -65,9 +67,9 @@
         </div>
 
         <div style="text-align: center; margin-top: 3rem;">
-          <button class="btn btn-primary" style="min-width: 260px;" (click)="onSubmit($event)"
+          <button class="btn btn-primary" style="min-width: 280px;" (click)="onSubmit($event)"
             [disabled]="!resumeFile() || isLoading()">
-            Analyze Resume
+            {{ isLoading() ? 'Analyzing...' : 'Analyze Resume' }}
           </button>
         </div>
       </section>
@@ -75,9 +77,12 @@
       <!-- STEP 2: LOADING -->
       <section *ngIf="isLoading()" class="loading-wrapper">
         <div class="spinner"></div>
-        <h3 style="font-weight: 600; font-family: 'Poppins';">Processing Intelligence</h3>
-        <p style="color: var(--text-secondary); margin-top: 0.75rem; font-size: 1.1rem;">Running semantic analysis and
-          scanning for ATS patterns...</p>
+        <h3 style="font-weight: 700; font-family: 'Poppins'; font-size: 1.5rem; margin-bottom: 0.5rem;">Processing
+          Intelligence</h3>
+        <p style="color: var(--primary); font-weight: 600; font-size: 1.1rem; min-height: 1.6rem;">{{ loadingStage() }}
+        </p>
+        <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 1rem;">This may take up to 30 seconds for
+          deep semantic analysis.</p>
       </section>
 
       <!-- STEP 3: RESULTS DASHBOARD -->
@@ -89,14 +94,14 @@
             <p class="candidate-meta">Professional Audit • {{ recruiterInsights().candidate_details.email }}</p>
           </div>
           <div [className]="getRatingClass(results().rating)" class="tag"
-            style="padding: 0.5rem 1.25rem; font-weight: 700;">
+            style="padding: 0.75rem 1.5rem; font-weight: 700; font-size: 1rem;">
             {{ results().rating }} Match
           </div>
         </div>
 
         <!-- RECRUITER INSIGHTS: PROFILE CARD -->
         <div class="card" *ngIf="recruiterInsights()">
-          <h3 class="section-title"><span>👤</span> Professional Profile</h3>
+          <h3 class="section-title"><span class="section-icon">👤</span> Professional Profile</h3>
           <div class="profile-grid">
             <div>
               <label class="profile-label">Experience Tenure</label>
@@ -118,7 +123,7 @@
           <div class="left-col">
             <!-- TIMELINE VISUALIZATION -->
             <div class="card" *ngIf="recruiterInsights()?.timeline">
-              <h3 class="section-title"><span>📅</span> Experience Journey</h3>
+              <h3 class="section-title"><span class="section-icon">📅</span> Experience Journey</h3>
               <div class="timeline-track">
                 <div class="timeline-event" *ngFor="let event of getSortedTimeline()">
                   <div class="timeline-dot"></div>
@@ -133,28 +138,55 @@
 
             <!-- Skills Breakdown -->
             <div class="card">
-              <h3 class="section-title"><span>🛠️</span> Skills Taxonomy</h3>
-              <div style="margin-bottom: 2rem;">
+              <h3 class="section-title"><span class="section-icon">🛠️</span> Skills Taxonomy</h3>
+              <div style="margin-bottom: 2.5rem;">
                 <label class="skill-category-label">Technical Proficiencies</label>
                 <div class="tags">
                   <span class="tag" *ngFor="let s of recruiterInsights().key_sections.skills.technical">{{ s }}</span>
                 </div>
               </div>
 
-              <div style="margin-bottom: 2rem;">
+              <div style="margin-bottom: 2.5rem;">
                 <label class="skill-category-label">Professional Competencies</label>
                 <div class="tags">
                   <span class="tag" *ngFor="let s of recruiterInsights().key_sections.skills.soft_skills">{{ s }}</span>
                 </div>
               </div>
 
+              <!-- KEYWORD GAP ANALYSIS (New Feature) -->
+              <div class="card" *ngIf="results().keyword_match?.missing_keywords?.length > 0">
+                <h3 class="section-title"><span class="section-icon"
+                    style="background: var(--warning-soft); color: var(--warning)">⚠️</span> Keyword Gap Analysis</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                  Your resume is missing these high-value keywords found in the job description. Adding them can boost
+                  your ATS score significantly.
+                </p>
+                <div class="tags">
+                  <span class="tag tag-danger" *ngFor="let k of results().keyword_match.missing_keywords"
+                    style="cursor: pointer; opacity: 0.8;">
+                    + {{ k }}
+                  </span>
+                </div>
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-main);">
+                  <label class="skill-category-label">Matched Keywords</label>
+                  <div class="tags">
+                    <span class="tag tag-success" *ngFor="let k of results().keyword_match.matching_keywords">
+                      ✓ {{ k }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <!-- SKILL HEATMAP VISUALIZATION -->
-              <div style="margin-top: 2.5rem; border-top: 1px solid var(--border-main); padding-top: 1.5rem;">
+              <div style="margin-top: 3rem; border-top: 1px solid var(--border-main); padding-top: 2rem;">
                 <label class="skill-category-label">Skill Density Map</label>
                 <div class="heatmap-container">
-                  <div class="heatmap-square lv{{ getSkillLevel(recruiterInsights().skill_heatmap.technical) }}"></div>
-                  <div class="heatmap-square lv{{ getSkillLevel(recruiterInsights().skill_heatmap.tools) }}"></div>
-                  <div class="heatmap-square lv{{ getSkillLevel(recruiterInsights().skill_heatmap.soft) }}"></div>
+                  <div class="heatmap-square lv{{ getSkillLevel(recruiterInsights().skill_heatmap.technical) }}"
+                    title="Technical Skills"></div>
+                  <div class="heatmap-square lv{{ getSkillLevel(recruiterInsights().skill_heatmap.tools) }}"
+                    title="Tools"></div>
+                  <div class="heatmap-square lv{{ getSkillLevel(recruiterInsights().skill_heatmap.soft) }}"
+                    title="Soft Skills"></div>
                   <div class="heatmap-square lv1"></div>
                   <div class="heatmap-square lv2"></div>
                   <div class="heatmap-square lv1"></div>
@@ -163,10 +195,10 @@
                 </div>
                 <div class="heatmap-legend">
                   <span>Sparse</span>
-                  <div class="legend-box lv1"></div>
-                  <div class="legend-box lv2"></div>
-                  <div class="legend-box lv3"></div>
-                  <div class="legend-box lv4"></div>
+                  <div class="legend-box lv1" style="background: var(--primary-soft)"></div>
+                  <div class="legend-box lv2" style="background: var(--primary-light)"></div>
+                  <div class="legend-box lv3" style="background: var(--primary)"></div>
+                  <div class="legend-box lv4" style="background: var(--primary-hover)"></div>
                   <span>Dense</span>
                 </div>
               </div>
@@ -174,11 +206,11 @@
 
             <!-- LinkedIn Profile Audit -->
             <div class="card">
-              <h3 class="section-title"><span>🔗</span> LinkedIn Profile Strategy</h3>
-              <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Enhance your social
-                presence by auditing your profile content.</p>
-              <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">
-                <textarea class="linkedin-audit-textarea" placeholder="Paste LinkedIn 'About' or 'Experience' text..."
+              <h3 class="section-title"><span class="section-icon">🔗</span> LinkedIn Strategy</h3>
+              <p style="font-size: 1rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Paste your LinkedIn
+                'About' section below to analyze its impact.</p>
+              <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                <textarea class="linkedin-audit-textarea" placeholder="Paste LinkedIn content here..."
                   [ngModel]="linkedInUrl()" (ngModelChange)="linkedInUrl.set($event)"></textarea>
               </div>
               <button class="btn btn-secondary" (click)="analyzeLinkedIn()" style="width: 100%;">Analyze Profile
@@ -186,12 +218,12 @@
 
               <div *ngIf="linkedInResult()" class="status-card"
                 style="margin-top: 2rem; border-left: 4px solid var(--primary); padding: 1.5rem;">
-                <div style="font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">Social Score: {{
+                <div style="font-weight: 700; color: var(--text-primary); font-size: 1.2rem;">Social Score: {{
                   linkedInResult().overall_score }}/100</div>
-                <p style="font-size: 0.95rem; color: var(--text-secondary); margin-top: 0.5rem;">{{
+                <p style="font-size: 1rem; color: var(--text-secondary); margin-top: 0.5rem;">{{
                   linkedInResult().headline_strength }} Headline • {{ linkedInResult().about_section }} Summary</p>
                 <ul
-                  style="margin-top: 1rem; padding-left: 1.25rem; font-size: 0.9rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.5rem;">
+                  style="margin-top: 1rem; padding-left: 1.25rem; font-size: 0.95rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.5rem;">
                   <li *ngFor="let rec of linkedInResult().recommendations">{{ rec }}</li>
                 </ul>
               </div>
@@ -200,13 +232,15 @@
             <!-- Strengths & Improvements -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
               <div>
-                <h3 class="section-title" style="color: var(--accent);"><span>✔️</span> Strengths</h3>
+                <h3 class="section-title" style="color: var(--accent);"><span class="section-icon"
+                    style="background: var(--accent-soft); color: var(--accent)">✔️</span> Strengths</h3>
                 <div class="status-card" *ngFor="let s of recruiterInsights().resume_quality.strengths">
                   <p style="font-size: 0.95rem; color: var(--text-secondary);">{{ s }}</p>
                 </div>
               </div>
               <div>
-                <h3 class="section-title" style="color: var(--danger);"><span>⚠️</span> Improvements</h3>
+                <h3 class="section-title" style="color: var(--danger);"><span class="section-icon"
+                    style="background: var(--danger-soft); color: var(--danger)">⚠️</span> Improvements</h3>
                 <div class="status-card"
                   *ngFor="let s of recruiterInsights().improvement_suggestions.content_improvements">
                   <p style="font-size: 0.95rem; color: var(--text-secondary);">{{ s }}</p>
@@ -217,20 +251,40 @@
 
           <div class="right-col">
             <!-- ATS Score Card -->
-            <div class="card" style="border-top: 4px solid var(--text-primary);">
-              <h3 class="section-title"><span>📊</span> ATS Integrity</h3>
+            <div class="card">
+              <h3 class="section-title"><span class="section-icon">📊</span> ATS Integrity</h3>
               <div class="score-visual">
                 <div class="score-circle">
                   <span class="score-number">{{ results().overall_score | number:'1.0-0' }}</span>
                   <span class="score-label">Points</span>
                 </div>
-                <p class="score-description">High-level semantic matching indicator for automated recruiter systems.</p>
+              </div>
+              <p class="score-description">High-level semantic matching score mimicking enterprise ATS algorithms.</p>
+
+              <div style="margin-top: 2rem; border-top: 1px solid var(--border-main); padding-top: 1.5rem;">
+                <h4
+                  style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.08em; margin-bottom: 1.25rem;">
+                  Detailed Breakdown</h4>
+                <div *ngFor="let key of getScoreKeys(results())" class="score-metric" style="margin-bottom: 1rem;">
+                  <div
+                    style="display: flex; justify-content: space-between; font-size: 0.95rem; margin-bottom: 0.4rem;">
+                    <span style="color: var(--text-secondary); text-transform: capitalize; font-weight: 500;">{{
+                      key.replace('_', ' ') }}</span>
+                    <span style="font-weight: 700; color: var(--text-primary);">{{ results()[key] }}%</span>
+                  </div>
+                  <div
+                    style="height: 8px; background: var(--bg-surface); border-radius: 4px; overflow: hidden; border: 1px solid var(--border-main);">
+                    <div [style.width.%]="results()[key]"
+                      [style.background-color]="results()[key] > 75 ? 'var(--primary)' : (results()[key] > 50 ? 'var(--accent)' : 'var(--danger)')"
+                      style="height: 100%; border-radius: 4px; transition: width 1s ease-out;"></div>
+                  </div>
+                </div>
               </div>
             </div>
 
             <!-- Career Roadmap Summary -->
-            <div class="card" *ngIf="results().career_roadmap">
-              <h3 class="section-title"><span>🚀</span> Next Horizon</h3>
+            <div class="card" *ngIf="results().career_roadmap" style="margin-top: 2rem;">
+              <h3 class="section-title"><span class="section-icon">🚀</span> Next Horizon</h3>
               <p class="roadmap-target">{{ results().career_roadmap.target_next_level }}</p>
               <ul class="roadmap-steps">
                 <li *ngFor="let step of results().career_roadmap.steps.slice(0, 3)" class="roadmap-step">
@@ -245,7 +299,14 @@
         <div class="card download-card" style="margin-top: 4rem;">
           <div class="download-info">
             <h3>Ready for Submission</h3>
-            <p>Export your verified professional report for recruiter outreach.</p>
+            <p>Export your verified professional report. Formatted for standard A4 printing.</p>
+            <div
+              style="display: flex; gap: 1rem; margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">
+              <span>• PDF Format</span>
+              <span>• ATS Verified</span>
+              <span>• <a href="#" (click)="$event.preventDefault(); printPage()"
+                  style="color: var(--primary); text-decoration: none; cursor: pointer;">Print View</a></span>
+            </div>
           </div>
           <button class="btn btn-primary" (click)="downloadReport()" [disabled]="isPdfLoading()">
             <span>⬇️</span> {{ isPdfLoading() ? 'Generating...' : 'Download Report' }}
@@ -253,36 +314,37 @@
         </div>
       </section>
 
-      <!-- STEP 4: REPORTS VIEW -->
-      <section *ngIf="currentStep() === 4">
-        <div class="card" style="text-align: center; padding: 6rem 2rem;">
-          <h1 style="margin-bottom: 1.5rem;">Report Repository</h1>
-          <p style="color: var(--text-secondary); margin-bottom: 3rem; font-size: 1.1rem;">Access and manage your
-            generated analysis reports in one place.</p>
-          <div
-            style="max-width: 500px; margin: 0 auto; padding: 3rem; border: 20px dashed var(--border-main); border-radius: var(--radius-lg); color: var(--text-muted);">
-            <p>No reports found in this session.</p>
-          </div>
-          <button class="btn btn-primary" style="margin-top: 3rem;" (click)="currentStep.set(1)">New Analysis</button>
-        </div>
-      </section>
-
       <!-- STEP 5: HISTORY VIEW -->
       <section *ngIf="currentStep() === 5">
-        <div class="card" style="text-align: center; padding: 6rem 2rem;">
-          <h1 style="margin-bottom: 1.5rem;">Analysis History</h1>
-          <p style="color: var(--text-secondary); margin-bottom: 3rem; font-size: 1.1rem;">Review your past scans and
-            optimization progress.</p>
-          <div style="max-width: 650px; margin: 0 auto;">
-            <div class="status-card"
-              style="display: flex; justify-content: space-between; align-items: center; padding: 2rem;">
-              <div style="text-align: left;">
-                <div style="font-weight: 700; font-size: 1.1rem;">{{ resumeFileName() || 'Untitled Session' }}</div>
-                <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem;">Active Analysis Session •
-                  Today</div>
+        <div class="card" style="max-width: 800px; margin: 0 auto; min-height: 60vh;">
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-main);">
+            <h2 class="section-title" style="margin-bottom: 0;">Analysis History</h2>
+            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" (click)="clearHistory()"
+              *ngIf="historyList().length > 0">Clear History</button>
+          </div>
+
+          <div *ngIf="historyList().length === 0"
+            style="text-align: center; padding: 4rem 0; color: var(--text-muted);">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
+            <p>No analysis history found.</p>
+            <button class="btn btn-primary" style="margin-top: 1.5rem;" (click)="currentStep.set(1)">Start New
+              Analysis</button>
+          </div>
+
+          <div class="history-list">
+            <div class="history-item" *ngFor="let item of historyList()" (click)="selectHistory(item)">
+              <div>
+                <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 0.25rem;">{{
+                  item.fileName }}</div>
+                <div style="font-size: 0.9rem; color: var(--text-muted);">{{ item.date | date:'medium' }} • {{
+                  item.candidate }}</div>
               </div>
-              <div *ngIf="results()" style="font-weight: 800; color: var(--text-primary); font-size: 1.5rem;">
-                {{ results().overall_score | number:'1.0-0' }}%
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="font-weight: 800; font-size: 1.5rem; color: var(--primary);">{{ item.score | number:'1.0-0'
+                  }}%</div>
+                <button class="btn btn-secondary" style="padding: 0.5rem;"
+                  (click)="deleteHistory(item.id, $event)">✕</button>
               </div>
             </div>
           </div>

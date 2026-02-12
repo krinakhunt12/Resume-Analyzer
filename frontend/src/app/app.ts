@@ -21,6 +21,7 @@ export class App {
 
   // State signals
   isLoading = signal<boolean>(false);
+  loadingStage = signal<string>('Initializing Analysis Engine...');
   errorMsg = signal<string>('');
   results = signal<any>(null);
   recruiterInsights = signal<any>(null);
@@ -30,7 +31,10 @@ export class App {
   isDarkMode = signal<boolean>(false);
   isSticky = signal<boolean>(false);
   showJd = signal<boolean>(false);
-  currentStep = signal<number>(1); // 1: Upload, 2: Scan, 3: Insights
+  currentStep = signal<number>(1); // 1: Upload, 2: Scan, 3: Insights, 4: Reports, 5: History
+
+  // History System
+  historyList = signal<any[]>([]);
 
   // Temporary inputs for ngModel
   tempJdText = '';
@@ -58,8 +62,10 @@ export class App {
 
     // Scroll listener for sticky header
     window.addEventListener('scroll', () => {
-      this.isSticky.set(window.scrollY > 150);
+      this.isSticky.set(window.scrollY > 80);
     });
+
+    this.loadHistory();
   }
 
   toggleTheme() {
@@ -73,6 +79,64 @@ export class App {
 
   toggleChat() {
     this.isChatOpen.update(v => !v);
+  }
+
+  // --- History Management ---
+  loadHistory() {
+    const saved = localStorage.getItem('resume_history');
+    if (saved) {
+      try {
+        this.historyList.set(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse history', e);
+      }
+    }
+  }
+
+  saveToCurrentHistory(data: any) {
+    const newItem = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      fileName: this.resumeFileName(),
+      score: data.results?.overall_score || 0,
+      candidate: data.results?.candidate_name || 'Candidate',
+      data: data // Store full result
+    };
+
+    const currentList = this.historyList();
+    // Prepend and limit to 10
+    const updatedList = [newItem, ...currentList].slice(0, 10);
+
+    this.historyList.set(updatedList);
+    this.saveHistoryToLocalStorage(updatedList);
+  }
+
+  saveHistoryToLocalStorage(list: any[]) {
+    localStorage.setItem('resume_history', JSON.stringify(list));
+  }
+
+  deleteHistory(id: number, event: Event) {
+    event.stopPropagation();
+    const newList = this.historyList().filter(h => h.id !== id);
+    this.historyList.set(newList);
+    this.saveHistoryToLocalStorage(newList);
+  }
+
+  selectHistory(item: any) {
+    this.results.set(item.data.results);
+    this.recruiterInsights.set(item.data.recruiter_insights);
+    this.reports.set(item.data.reports);
+    this.resumeFileName.set(item.fileName);
+
+    this.currentStep.set(3);
+    setTimeout(() => this.scrollToTop(), 100);
+  }
+
+  clearHistory() {
+    if (confirm('Are you sure you want to clear all history?')) {
+      this.historyList.set([]);
+      localStorage.removeItem('resume_history');
+    }
   }
 
   sendMessage() {
@@ -158,6 +222,12 @@ export class App {
     this.errorMsg.set('');
     this.coverLetter.set('');
 
+    // Simulate Loading Stages
+    this.loadingStage.set('Initializing Cloud Engine...');
+    setTimeout(() => { if (this.isLoading()) this.loadingStage.set('Extracting Text & Entities...'); }, 1200);
+    setTimeout(() => { if (this.isLoading()) this.loadingStage.set('Running Semantic Analysis...'); }, 2500);
+    setTimeout(() => { if (this.isLoading()) this.loadingStage.set('Calculating ATS Score...'); }, 3800);
+
     const formData = new FormData();
     formData.append('resume', this.resumeFile()!);
 
@@ -174,10 +244,14 @@ export class App {
         this.results.set(data.results);
         this.recruiterInsights.set(data.recruiter_insights);
         this.reports.set(data.reports);
+
+        // Save history
+        this.saveToCurrentHistory(data);
+
         this.isLoading.set(false);
         this.currentStep.set(3); // Result Step
         setTimeout(() => {
-          document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
+          this.scrollToTop();
         }, 100);
       },
       error: (err: any) => {
@@ -223,7 +297,14 @@ export class App {
 
   getSortedTimeline(): any[] {
     const timeline = this.recruiterInsights()?.timeline?.events || [];
-    return timeline.sort((a: any, b: any) => parseInt(b.year) - parseInt(a.year));
+    return timeline.sort((a: any, b: any) => {
+      const getYear = (y: string) => {
+        if (!y) return 0;
+        if (y.toLowerCase().includes('present') || y.toLowerCase().includes('current')) return 9999;
+        return parseInt(y) || 0;
+      };
+      return getYear(b.year) - getYear(a.year);
+    });
   }
 
   getDownloadUrl(filename: string): string {
@@ -240,5 +321,9 @@ export class App {
 
   scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  printPage() {
+    window.print();
   }
 }
