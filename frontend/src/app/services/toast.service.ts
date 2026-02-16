@@ -15,6 +15,8 @@ export interface Toast {
 export class ToastService {
   private toasts$ = new BehaviorSubject<Toast[]>([]);
   private maxToasts = 3;
+  // track auto-dismiss timers so we can clear them if a toast is removed manually
+  private timers: Record<string, any> = {};
 
   get toasts() {
     return this.toasts$.asObservable();
@@ -43,15 +45,21 @@ export class ToastService {
     this.toasts$.next(updatedToasts);
 
     // Auto-dismiss after the toast duration
-    setTimeout(() => {
+    const t = setTimeout(() => {
       this.remove(id);
     }, newToast.duration);
+    this.timers[id] = t;
   }
 
   remove(id: string) {
     const currentToasts = this.toasts$.value;
     const updatedToasts = currentToasts.filter(t => t.id !== id);
     this.toasts$.next(updatedToasts);
+    // clear any pending timer
+    if (this.timers[id]) {
+      clearTimeout(this.timers[id]);
+      delete this.timers[id];
+    }
   }
 
   // Convenience methods

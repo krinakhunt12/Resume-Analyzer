@@ -9,6 +9,11 @@
   max-width: 400px;
 }
 
+/* Allow clicks to pass through the container except on individual toasts */
+.toast-container {
+  pointer-events: none;
+}
+
 .toast {
   display: flex;
   align-items: flex-start;
@@ -20,6 +25,7 @@
   min-width: 320px;
   max-width: 400px;
   backdrop-filter: blur(8px);
+  pointer-events: auto;
 }
 
 .toast-success {
@@ -118,7 +124,12 @@
 
 /* Angular animation trigger */
 .toast {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.28s ease-out;
+}
+
+/* Smooth fade-out handled by Angular animation trigger; fallback for CSS-only */
+.toast.fade-out {
+  animation: fadeOut 0.28s ease-in forwards;
 }
 
 /* Responsive adjustments */
