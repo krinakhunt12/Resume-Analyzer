@@ -15,6 +15,9 @@ export class ResultsComponent implements OnInit {
   jobDescription = signal<string | null>(null);
   isLoading = signal<boolean>(true);
 
+  // Helper signal to expose recruiter insights conveniently
+  recruiterInsights = signal<any | null>(null);
+
   constructor(private router: Router) {}
 
   ngOnInit(): void {
@@ -23,6 +26,8 @@ export class ResultsComponent implements OnInit {
     if (navigation.results) {
       this.results.set(navigation.results);
       this.jobDescription.set(navigation.jobDescription || null);
+      // map recruiter insights if available
+      this.recruiterInsights.set(navigation.results.recruiter_insights || null);
       this.isLoading.set(false);
     } else {
       // If no results, redirect to upload page
@@ -56,6 +61,26 @@ export class ResultsComponent implements OnInit {
     const total = matched + (results.results.keyword_match.missing_keywords?.length || 0);
     
     return total > 0 ? Math.round((matched / total) * 100) : null;
+  }
+
+  getCandidateEmail(): string | null {
+    return this.recruiterInsights()?.candidate_details?.email || this.results()?.results?.contact_info?.emails?.[0] || null;
+  }
+
+  getCandidatePhone(): string | null {
+    const phone = this.recruiterInsights()?.candidate_details?.phone;
+    if (phone && phone !== 'Not Found') return phone;
+    const phones = this.results()?.results?.parsed_resume?.contact_info?.phone || this.results()?.results?.contact_info?.phones?.[0];
+    return phones || null;
+  }
+
+  hasUrgentWarnings(): boolean {
+    const weaknesses = this.recruiterInsights()?.resume_quality?.weaknesses || [];
+    return weaknesses.some((w: string) => w.toLowerCase().includes('urgent'));
+  }
+
+  getImprovementSuggestions(): string[] {
+    return this.recruiterInsights()?.improvement_suggestions?.content_improvements || this.recruiterInsights()?.improvement_suggestions?.resume_formatting_improvements || [];
   }
 
   formatExperienceYears(years: number | string | undefined): string {

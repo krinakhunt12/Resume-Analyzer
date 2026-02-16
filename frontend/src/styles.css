@@ -306,6 +306,7 @@ h3,
     opacity: 0;
     transition: opacity 0.3s;
     z-index: 0;
+    pointer-events: none; /* allow clicks to pass through the decorative overlay */
 }
 
 .upload-container:hover {
@@ -497,6 +498,15 @@ h3,
     position: relative;
     border-left: 2px solid var(--border-main);
     margin-left: 1rem;
+}
+
+/* Disable large hover transforms and layout-shifting hover visuals across the site.
+   This prevents hover from causing the page to appear blurred, shifted or blocking clicks.
+   If you want hover effects for specific controls, add scoped rules for those elements instead. */
+*:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    transition: none !important;
 }
 
 .timeline-event {

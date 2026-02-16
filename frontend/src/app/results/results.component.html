@@ -1,5 +1,4 @@
-@if (!isLoading()) {
-  <div class="results-container">
+<div class="results-container" *ngIf="!isLoading()">
     <!-- Header Section -->
     <div class="results-header">
       <button class="back-btn" (click)="goBack()" type="button">
@@ -35,28 +34,71 @@
       <div class="stat-value">{{ formatExperienceYears(results()?.results?.experience_years) }}</div>
       <div class="stat-label">Experience</div>
     </div>
-    @if (hasJobDescription() && getMatchPercentage() !== null) {
-      <div class="stat-item">
-        <div class="stat-value">{{ getMatchPercentage() }}%</div>
-        <div class="stat-label">Job Match</div>
-      </div>
-    }
-    @if (results()?.results?.ats_score) {
-      <div class="stat-item">
-        <div class="stat-value">{{ results()?.results?.ats_score }}/100</div>
-        <div class="stat-label">ATS Score</div>
-      </div>
-    }
-    @if (results()?.results?.recommendations?.length) {
-      <div class="stat-item">
-        <div class="stat-value">{{ results()?.results?.recommendations?.length }}</div>
-        <div class="stat-label">Suggestions</div>
-      </div>
-    }
+    <div class="stat-item" *ngIf="hasJobDescription() && getMatchPercentage() !== null">
+      <div class="stat-value">{{ getMatchPercentage() }}%</div>
+      <div class="stat-label">Job Match</div>
+    </div>
+    <div class="stat-item" *ngIf="results()?.results?.ats_score">
+      <div class="stat-value">{{ results()?.results?.ats_score }}/100</div>
+      <div class="stat-label">ATS Score</div>
+    </div>
+    <div class="stat-item" *ngIf="results()?.results?.recommendations?.length">
+      <div class="stat-value">{{ results()?.results?.recommendations?.length }}</div>
+      <div class="stat-label">Suggestions</div>
+    </div>
   </div>
 
   <!-- Main Content Grid -->
   <div class="content-grid">
+    <!-- Recruiter Insights -->
+    <div class="content-card insights-card" *ngIf="recruiterInsights()">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10z"/>
+          <path d="M2 22c1.5-4 6-6 10-6s8.5 2 10 6"/>
+        </svg>
+        <h2>Recruiter Insights</h2>
+      </div>
+      <div class="card-content">
+        <div class="insights-top">
+          <div class="contact-info">
+            <div class="contact-line"><strong>Name:</strong> {{ recruiterInsights()?.candidate_details?.name || results()?.results?.candidate_name || 'N/A' }}</div>
+            <div class="contact-line"><strong>Email:</strong> {{ getCandidateEmail() || 'Not found' }}</div>
+            <div class="contact-line"><strong>Phone:</strong>
+              <span [class.urgent]="!getCandidatePhone() || getCandidatePhone() === 'Not Found'">{{ getCandidatePhone() || 'Not Found' }}</span>
+            </div>
+            <div class="contact-line"><strong>Experience:</strong> {{ recruiterInsights()?.candidate_details?.total_years_experience || 'Not specified' }}</div>
+          </div>
+          <div class="insights-badges">
+            <span class="badge score">Score: {{ recruiterInsights()?.ats_compatibility?.score || results()?.results?.overall_score || 0 }}</span>
+            <span class="badge rating">{{ results()?.results?.rating || '—' }}</span>
+          </div>
+        </div>
+
+        <div class="insights-body">
+          <div class="insights-section" *ngIf="recruiterInsights()?.resume_quality?.strengths?.length">
+            <h4>Strengths</h4>
+            <ul>
+              <li *ngFor="let s of recruiterInsights()?.resume_quality?.strengths">{{ s }}</li>
+            </ul>
+          </div>
+
+          <div class="insights-section" *ngIf="recruiterInsights()?.resume_quality?.weaknesses?.length">
+            <h4>Weaknesses</h4>
+            <ul>
+              <li *ngFor="let w of recruiterInsights()?.resume_quality?.weaknesses" [class.urgent]="w.toLowerCase().includes('urgent')">{{ w }}</li>
+            </ul>
+          </div>
+
+          <div class="insights-section" *ngIf="getImprovementSuggestions()?.length">
+            <h4>Improvement Suggestions</h4>
+            <ol>
+              <li *ngFor="let sug of getImprovementSuggestions()">{{ sug }}</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Resume Summary -->
     <div class="content-card">
       <div class="card-header">
@@ -67,21 +109,19 @@
         <h2>Resume Summary</h2>
       </div>
       <div class="card-content">
-        @if (results()?.results?.summary) {
-          <div>
-            <p class="summary-text">{{ results()?.results?.summary }}</p>
-          </div>
-        } @else {
+        <div *ngIf="results()?.results?.summary; else noSummary">
+          <p class="summary-text">{{ results()?.results?.summary }}</p>
+        </div>
+        <ng-template #noSummary>
           <div class="empty-state">
             <p>Resume summary not available</p>
           </div>
-        }
+        </ng-template>
       </div>
     </div>
 
     <!-- Key Strengths -->
-    @if (hasStrengths()) {
-      <div class="content-card">
+    <div class="content-card" *ngIf="hasStrengths()">
         <div class="card-header">
           <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
@@ -90,22 +130,18 @@
         </div>
         <div class="card-content">
           <ul class="strengths-list">
-            @for (strength of results()?.results?.strengths; track strength) {
-              <li>
-                <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <polyline points="20,6 9,17 4,12"/>
-                </svg>
-                {{ strength }}
-              </li>
-            }
+            <li *ngFor="let strength of results()?.results?.strengths">
+              <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="20,6 9,17 4,12"/>
+              </svg>
+              {{ strength }}
+            </li>
           </ul>
         </div>
       </div>
-    }
 
     <!-- Skills Analysis -->
-    @if (hasSkillsAnalysis()) {
-      <div class="content-card full-width">
+    <div class="content-card full-width" *ngIf="hasSkillsAnalysis()">
         <div class="card-header">
           <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -117,132 +153,92 @@
         </div>
         <div class="card-content">
           <div class="skills-grid">
-            @if (results()?.results?.skills_analysis?.technical_skills?.length) {
-              <div class="skill-category">
-                <h3>Technical Skills</h3>
-                <div class="skill-tags">
-                  @for (skill of results()?.results?.skills_analysis?.technical_skills; track skill) {
-                    <span class="skill-tag tech">
-                      {{ skill }}
-                    </span>
-                  }
-                </div>
+            <div class="skill-category" *ngIf="results()?.results?.skills_analysis?.technical_skills?.length">
+              <h3>Technical Skills</h3>
+              <div class="skill-tags">
+                <span class="skill-tag tech" *ngFor="let skill of results()?.results?.skills_analysis?.technical_skills">{{ skill }}</span>
               </div>
-            }
-            
-            @if (results()?.results?.skills_analysis?.soft_skills?.length) {
-              <div class="skill-category">
-                <h3>Soft Skills</h3>
-                <div class="skill-tags">
-                  @for (skill of results()?.results?.skills_analysis?.soft_skills; track skill) {
-                    <span class="skill-tag soft">
-                      {{ skill }}
-                    </span>
-                  }
-                </div>
+            </div>
+
+            <div class="skill-category" *ngIf="results()?.results?.skills_analysis?.soft_skills?.length">
+              <h3>Soft Skills</h3>
+              <div class="skill-tags">
+                <span class="skill-tag soft" *ngFor="let skill of results()?.results?.skills_analysis?.soft_skills">{{ skill }}</span>
               </div>
-            }
-            
-            @if (results()?.results?.skills_analysis?.missing_skills?.length) {
-              <div class="skill-category">
-                <h3>Skills to Consider Adding</h3>
-                <div class="skill-tags">
-                  @for (skill of results()?.results?.skills_analysis?.missing_skills; track skill) {
-                    <span class="skill-tag missing">
-                      {{ skill }}
-                    </span>
-                  }
-                </div>
+            </div>
+
+            <div class="skill-category" *ngIf="results()?.results?.skills_analysis?.missing_skills?.length">
+              <h3>Skills to Consider Adding</h3>
+              <div class="skill-tags">
+                <span class="skill-tag missing" *ngFor="let skill of results()?.results?.skills_analysis?.missing_skills">{{ skill }}</span>
               </div>
-            }
+            </div>
           </div>
         </div>
       </div>
-    }
 
     <!-- Job Match Analysis -->
-    @if (hasJobDescription() && hasKeywordMatch()) {
-      <div class="content-card full-width">
-        <div class="card-header">
-          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="m21 21-4.35-4.35"/>
-          </svg>
-          <h2>Job Match Analysis</h2>
-          @if (getMatchPercentage() !== null) {
-            <div class="match-percentage">
-              <span class="percentage">{{ getMatchPercentage() }}% Match</span>
-            </div>
-          }
+    <div class="content-card full-width" *ngIf="hasJobDescription() && hasKeywordMatch()">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <h2>Job Match Analysis</h2>
+        <div class="match-percentage" *ngIf="getMatchPercentage() !== null">
+          <span class="percentage">{{ getMatchPercentage() }}% Match</span>
         </div>
-        <div class="card-content">
-          <div class="keyword-analysis">
-            @if (results()?.results?.keyword_match?.matched_keywords?.length) {
-              <div class="keyword-section">
-                <h4>
-                  <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <polyline points="20,6 9,17 4,12"/>
-                  </svg>
-                  Matched Keywords ({{ results()?.results?.keyword_match?.matched_keywords?.length }})
-                </h4>
-                <div class="keyword-tags matched">
-                  @for (keyword of results()?.results?.keyword_match?.matched_keywords; track keyword) {
-                    <span class="keyword-tag">
-                      {{ keyword }}
-                    </span>
-                  }
-                </div>
-              </div>
-            }
-            
-            @if (results()?.results?.keyword_match?.missing_keywords?.length) {
-              <div class="keyword-section">
-                <h4>
-                  <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="15" y1="9" x2="9" y2="15"/>
-                    <line x1="9" y1="9" x2="15" y2="15"/>
-                  </svg>
-                  Missing Keywords ({{ results()?.results?.keyword_match?.missing_keywords?.length }})
-                </h4>
-                <div class="keyword-tags missing">
-                  @for (keyword of results()?.results?.keyword_match?.missing_keywords; track keyword) {
-                    <span class="keyword-tag">
-                      {{ keyword }}
-                    </span>
-                  }
-                </div>
-              </div>
-            }
+      </div>
+      <div class="card-content">
+        <div class="keyword-analysis">
+          <div class="keyword-section" *ngIf="results()?.results?.keyword_match?.matched_keywords?.length">
+            <h4>
+              <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="20,6 9,17 4,12"/>
+              </svg>
+              Matched Keywords ({{ results()?.results?.keyword_match?.matched_keywords?.length }})
+            </h4>
+            <div class="keyword-tags matched">
+              <span class="keyword-tag" *ngFor="let keyword of results()?.results?.keyword_match?.matched_keywords">{{ keyword }}</span>
+            </div>
+          </div>
+
+          <div class="keyword-section" *ngIf="results()?.results?.keyword_match?.missing_keywords?.length">
+            <h4>
+              <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+              Missing Keywords ({{ results()?.results?.keyword_match?.missing_keywords?.length }})
+            </h4>
+            <div class="keyword-tags missing">
+              <span class="keyword-tag" *ngFor="let keyword of results()?.results?.keyword_match?.missing_keywords">{{ keyword }}</span>
+            </div>
           </div>
         </div>
       </div>
-    }
+    </div>
 
     <!-- Improvement Recommendations -->
-    @if (hasRecommendations()) {
-      <div class="content-card full-width">
-        <div class="card-header">
-          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
-          <h2>Improvement Recommendations</h2>
-        </div>
-        <div class="card-content">
-          <div class="recommendations-list">
-            @for (recommendation of results()?.results?.recommendations; track recommendation; let i = $index) {
-              <div class="recommendation-item">
-                <div class="recommendation-number">{{ i + 1 }}</div>
-                <div class="recommendation-content">
-                  <p>{{ recommendation }}</p>
-                </div>
-              </div>
-            }
+    <div class="content-card full-width" *ngIf="hasRecommendations()">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        <h2>Improvement Recommendations</h2>
+      </div>
+      <div class="card-content">
+        <div class="recommendations-list">
+          <div class="recommendation-item" *ngFor="let recommendation of results()?.results?.recommendations; let i = index">
+            <div class="recommendation-number">{{ i + 1 }}</div>
+            <div class="recommendation-content">
+              <p>{{ recommendation }}</p>
+            </div>
           </div>
         </div>
       </div>
-    }
-  </div>
+    </div>
 
   <!-- Action Buttons -->
   <div class="action-buttons">
@@ -250,12 +246,8 @@
     <button class="primary-btn" (click)="startNewAnalysis()">Start New Analysis</button>
   </div>
 </div>
-}
-
 <!-- Loading State -->
-@if (isLoading()) {
-  <div class="loading-container">
-    <div class="loading-spinner large"></div>
-    <p>Loading results...</p>
-  </div>
-}
+<div class="loading-container" *ngIf="isLoading()">
+  <div class="loading-spinner large"></div>
+  <p>Loading results...</p>
+</div>

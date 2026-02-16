@@ -24,7 +24,8 @@ export class ToastService {
     const id = Date.now().toString();
     const newToast: Toast = {
       id,
-      duration: 5000,
+      // default to 3 seconds unless caller provides a different duration
+      duration: toast.duration ?? 3000,
       ...toast
     };
 
@@ -41,7 +42,7 @@ export class ToastService {
     const updatedToasts = [newToast, ...currentToasts].slice(0, this.maxToasts);
     this.toasts$.next(updatedToasts);
 
-    // Auto-dismiss
+    // Auto-dismiss after the toast duration
     setTimeout(() => {
       this.remove(id);
     }, newToast.duration);

@@ -58,7 +58,7 @@ export class UploadComponent {
   }
 
   get canAnalyze(): boolean {
-    return this.loadingState() !== LoadingState.LOADING;
+    return !!this.resumeFile() && this.loadingState() !== LoadingState.LOADING;
   }
 
   get isLoading(): boolean {
@@ -128,6 +128,7 @@ export class UploadComponent {
   }
 
   analyzeResume(): void {
+    console.log('analyzeResume called, resumeFile=', this.resumeFile());
     // Prevent multiple concurrent requests
     if (this.loadingState() === LoadingState.LOADING) {
       return;
@@ -142,36 +143,67 @@ export class UploadComponent {
     this.errorMessage.set('');
 
     const formData = new FormData();
-    formData.append('resume', this.resumeFile()!);
+    // Attach file with filename so backend can read original name
+    const file = this.resumeFile();
+    if (!file) {
+      this.showValidationError('Please select a resume file to analyze.');
+      this.loadingState.set(LoadingState.IDLE);
+      return;
+    }
+    formData.append('resume', file, file.name);
     
     if (this.jobDescription.trim()) {
       formData.append('job_description_text', this.jobDescription.trim());
     }
 
+    this.toastService.show({ type: 'info', title: 'Analysis Started', description: 'Analyzing your resume — this may take a moment.' });
+    console.log('Sending formData to ATS service...');
     this.atsService.analyzeResume(formData).subscribe({
       next: (response) => {
+        console.log('analyzeResume response', response);
         this.loadingState.set(LoadingState.SUCCESS);
-        
+
         // Navigate to results page with data
         this.router.navigate(['/results'], {
-          state: { 
-            results: response, 
+          state: {
+            results: response,
             jobDescription: this.jobDescription.trim() || null
           }
         });
       },
       error: (error) => {
+        console.error('analyzeResume error', error);
         this.loadingState.set(LoadingState.ERROR);
-        const errorMsg = error.error || 'Analysis failed. Please try again.';
+        const errorMsg = (error && (error.error || error.message)) || 'Analysis failed. Please try again.';
         this.errorMessage.set(errorMsg);
-        
-        this.toastService.show({
-          type: 'error',
-          title: 'Analysis Failed',
-          description: errorMsg
-        });
+
+        this.toastService.show({ type: 'error', title: 'Analysis Failed', description: errorMsg });
       }
     });
+  }
+
+  onAnalyzeClick(event: MouseEvent): void {
+    // Prevent parent handlers or strange focus/hover overlays from swallowing the click
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!this.canAnalyze) {
+      // Show a friendly hint if Analyze is not ready
+      this.showValidationError('Please select a resume file before analyzing.');
+      return;
+    }
+
+    this.analyzeResume();
+  }
+
+  // Ensure pasted job description text is captured even when browser doesn't update ngModel immediately
+  onJdPaste(event: ClipboardEvent): void {
+    const pasted = event.clipboardData?.getData('text') || '';
+    if (pasted) {
+      // set the property directly so ngModel sees the latest value
+      this.jobDescription = pasted;
+      // allow ngModel to synchronize normally after paste
+    }
   }
 
   private validateInputs(): boolean {
