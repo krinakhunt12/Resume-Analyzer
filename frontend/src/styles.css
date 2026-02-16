@@ -1,51 +1,53 @@
-/* Professional Design System - White + Blur (Glassmorphism) Theme */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+/* Professional Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    /* Color Palette - premium Blue-Teal Logic */
+    /* Calm Blue and Neutral Gray Palette */
     --primary: #2563eb;
     --primary-hover: #1d4ed8;
-    --primary-light: #60a5fa;
+    --primary-light: #dbeafe;
     --primary-soft: #eff6ff;
 
-    --accent: #10b981;
-    --accent-hover: #059669;
-    --accent-soft: #ecfdf5;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #0f172a;
 
     --bg-page: #f8fafc;
-    /* Clean, soft off-white base */
     --bg-surface: #ffffff;
-    --bg-card: rgba(255, 255, 255, 0.85);
-    /* Improved Glass effect */
+    --bg-card: #ffffff;
 
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
     --text-muted: #94a3b8;
 
     --border-main: #e2e8f0;
     --border-hover: #cbd5e1;
 
-    --danger: #ef4444;
-    --danger-soft: #fef2f2;
+    --success: #10b981;
+    --success-soft: #ecfdf5;
     --warning: #f59e0b;
     --warning-soft: #fffbeb;
+    --error: #ef4444;
+    --error-soft: #fef2f2;
 
-    /* Shadows - Soft & Diffused (Premium Feel) */
+    /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-
-    /* Neumorphic / Glassmorphism */
-    --glass-blur: blur(16px);
-    --glass-border: 1px solid rgba(255, 255, 255, 0.6);
 
     /* Layout */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 24px;
-    --container-width: 1200px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --container-width: 1100px;
+    --transition: all 0.2s ease;
 }
 
 [data-theme="dark"] {

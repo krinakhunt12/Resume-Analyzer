@@ -1,0 +1,90 @@
+<div class="upload-container">
+  <div class="upload-layout">
+    <!-- Left Side: Resume Upload -->
+    <div class="upload-section">
+      <div class="upload-card">
+        <h2>Upload Your Resume</h2>
+        <p class="upload-description">
+          Drag and drop your resume here or click to browse. We support PDF and DOCX formats.
+        </p>
+
+        <div
+          class="drop-zone"
+          [class.drag-over]="false"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+          (click)="triggerFileInput()"
+        >
+          <div class="drop-zone-content">
+            @if (resumeFile()) {
+              <div class="file-selected">
+                <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14,2 14,8 20,8"/>
+                </svg>
+                <div class="file-info">
+                  <p class="file-name">{{ resumeFile()?.name }}</p>
+                  <p class="file-size">{{ (resumeFile()?.size || 0) / 1024 / 1024 | number:'1.1-1' }} MB</p>
+                </div>
+                <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <polyline points="20,6 9,17 4,12"/>
+                </svg>
+              </div>
+            } @else {
+              <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7,10 12,15 17,10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <p class="drop-text">Drop your resume here</p>
+              <p class="or-text">or</p>
+              <button class="choose-file-btn" type="button">Choose File</button>
+            }
+          </div>
+        </div>
+
+        <input
+          #fileInput
+          type="file"
+          accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          (change)="onFileSelected($event)"
+          style="display: none;"
+        />
+      </div>
+    </div>
+
+    <!-- Right Side: Job Description -->
+    <div class="jd-section">
+      <div class="jd-card">
+        <h3>Job Description <span class="optional">(Optional)</span></h3>
+        <p class="jd-description">
+          Paste the job description to get personalized analysis and match scoring.
+        </p>
+
+        <textarea
+          class="jd-textarea"
+          rows="12"
+          placeholder="Paste the job description here to get tailored recommendations..."
+          [(ngModel)]="jobDescription"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analyze Button -->
+  <div class="action-section">
+    <button
+      class="analyze-btn"
+      [disabled]="!resumeFile() || isAnalyzing()"
+      (click)="analyzeResume()"
+    >
+      @if (isAnalyzing()) {
+        <div class="loading-spinner"></div>
+        Analyzing Resume...
+      } @else {
+        Analyze Resume
+      }
+    </button>
+  </div>
+</div>

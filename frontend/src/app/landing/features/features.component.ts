@@ -12,23 +12,18 @@ export class FeaturesComponent {
   features = [
     {
       icon: '📊',
-      title: 'ATS Score Analysis',
-      description: 'Get detailed insights on how ATS systems score your resume with actionable recommendations.'
+      title: 'ATS Compatibility Score',
+      description: 'Get a comprehensive score showing how well your resume performs with Applicant Tracking Systems.'
     },
     {
       icon: '🎯',
       title: 'Skill Gap Detection',
-      description: 'Identify missing skills and competencies needed for your target job role.'
-    },
-    {
-      icon: '🔍',
-      title: 'Job Description Matching',
-      description: 'Compare your resume against job descriptions to see keyword alignment and match percentage.'
+      description: 'Identify missing skills and competencies that could strengthen your job applications.'
     },
     {
       icon: '🤖',
       title: 'AI Career Suggestions',
-      description: 'Receive personalized career advice and suggestions to improve your professional profile.'
+      description: 'Receive intelligent recommendations to optimize your resume and advance your career.'
     }
   ];
 }

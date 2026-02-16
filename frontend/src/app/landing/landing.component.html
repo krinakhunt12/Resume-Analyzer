@@ -1,164 +1,146 @@
-<div class="landing-page">
-  <app-hero (uploadResume)="startAnalysis()" (seeHowItWorks)="scrollToSection('how-it-works')"></app-hero>
-  <app-features id="features"></app-features>
-  <app-how-it-works id="how-it-works"></app-how-it-works>
-  <app-social-proof></app-social-proof>
-  <app-cta (startAnalysis)="startAnalysis()"></app-cta>
-  <section class="uploader-section" *ngIf="showUploader" id="uploader">
-    <div class="container">
-      <div class="card">
-        <h2>Upload Your Resume</h2>
-        <p>Get started with your free resume analysis.</p>
-        <div class="upload-form">
-          <label class="file-input">
-            <input type="file" accept=".pdf,.docx" (change)="onResumeSelected($event)" />
-            <span class="file-label-text">{{ resumeFile ? resumeFile.name : 'Choose Resume File' }}</span>
-          </label>
-          <label class="file-input">
-            <input type="file" accept=".pdf,.docx" (change)="onJDSelected($event)" />
-            <span class="file-label-text">{{ jdFile ? jdFile.name : 'Choose Job Description (Optional)' }}</span>
-          </label>
-          <button class="btn btn-primary" (click)="uploadAnalyze()" [disabled]="loading || !resumeFile">
-            {{ loading ? 'Analyzing...' : 'Analyze Resume' }}
-          </button>
-        </div>
-        <div *ngIf="loading" class="progress-bar">
-          <div class="progress-fill" [style.width.%]="progress"></div>
-          <span class="progress-text">{{ progress }}% Complete</span>
-        </div>
-        <div *ngIf="error" class="error-message">{{ error }}</div>
-      <div *ngIf="result" class="results-detailed">
-        <h3>Analysis Results</h3>
-
-        <!-- Overall Score -->
-        <div class="score-card card">
-          <h4>Overall Score</h4>
-          <div class="score-display">
-            <div class="score-circle" [style]="getScoreStyle(result.results.overall_score)">
-              {{ result.results.overall_score }}/100
-            </div>
-            <div class="rating">{{ result.results.rating }}</div>
-          </div>
-        </div>
-
-        <!-- Detailed Scores -->
-        <div class="scores-grid card">
-          <h4>Detailed Scores</h4>
-          <div class="score-item" *ngFor="let score of getScoreItems()">
-            <div class="score-label">{{ score.label }}</div>
-            <div class="score-bar">
-              <div class="score-fill" [style.width.%]="score.value"></div>
-            </div>
-            <div class="score-value">{{ score.value }}/100</div>
-          </div>
-        </div>
-
-        <!-- Candidate Details -->
-        <div class="details-card card">
-          <h4>Candidate Details</h4>
-          <div class="detail-item">
-            <strong>Name:</strong> {{ result.recruiter_insights.candidate_details.name }}
-          </div>
-          <div class="detail-item">
-            <strong>Email:</strong> {{ result.recruiter_insights.candidate_details.email }}
-          </div>
-          <div class="detail-item">
-            <strong>Phone:</strong> {{ result.recruiter_insights.candidate_details.phone }}
-          </div>
-          <div class="detail-item">
-            <strong>Experience:</strong> {{ result.recruiter_insights.candidate_details.total_years_experience }}
-          </div>
-        </div>
-
-        <!-- Skills -->
-        <div class="skills-card card">
-          <h4>Skills Overview</h4>
-          <div class="skill-section">
-            <h5>Technical Skills ({{ result.recruiter_insights.key_sections.skills.technical.length }})</h5>
-            <div class="skill-tags">
-              <span class="skill-tag" *ngFor="let skill of result.recruiter_insights.key_sections.skills.technical">{{ skill }}</span>
-            </div>
-          </div>
-          <div class="skill-section">
-            <h5>Soft Skills ({{ result.recruiter_insights.key_sections.skills.soft_skills.length }})</h5>
-            <div class="skill-tags">
-              <span class="skill-tag" *ngFor="let skill of result.recruiter_insights.key_sections.skills.soft_skills">{{ skill }}</span>
-            </div>
-          </div>
-          <div class="skill-section">
-            <h5>Tools ({{ result.recruiter_insights.key_sections.skills.tools.length }})</h5>
-            <div class="skill-tags">
-              <span class="skill-tag" *ngFor="let skill of result.recruiter_insights.key_sections.skills.tools">{{ skill }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Strengths and Recommendations -->
-        <div class="feedback-card card">
-          <h4>Strengths</h4>
-          <ul class="strengths-list">
-            <li *ngFor="let strength of result.results.strengths">{{ strength }}</li>
-          </ul>
-        </div>
-
-        <div class="feedback-card card">
-          <h4>Recommendations</h4>
-          <ul class="recommendations-list">
-            <li *ngFor="let rec of result.results.recommendations">{{ rec }}</li>
-          </ul>
-        </div>
-
-        <!-- ATS Compatibility -->
-        <div class="ats-card card">
-          <h4>ATS Compatibility</h4>
-          <div class="ats-score">Score: {{ result.recruiter_insights.ats_compatibility.score }}/100</div>
-          <div class="ats-issues" *ngIf="result.recruiter_insights.ats_compatibility.formatting_issues.length">
-            <h5>Issues:</h5>
-            <ul>
-              <li *ngFor="let issue of result.recruiter_insights.ats_compatibility.formatting_issues">{{ issue }}</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Improvement Suggestions -->
-        <div class="improvements-card card">
-          <h4>Improvement Suggestions</h4>
-          <div *ngIf="result.recruiter_insights.improvement_suggestions.skills_to_add.length">
-            <h5>Skills to Add:</h5>
-            <ul>
-              <li *ngFor="let skill of result.recruiter_insights.improvement_suggestions.skills_to_add">{{ skill }}</li>
-            </ul>
-          </div>
-          <div *ngIf="result.recruiter_insights.improvement_suggestions.content_improvements.length">
-            <h5>Content Improvements:</h5>
-            <ul>
-              <li *ngFor="let imp of result.recruiter_insights.improvement_suggestions.content_improvements">{{ imp }}</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Career Roadmap -->
-        <div class="roadmap-card card">
-          <h4>Career Roadmap</h4>
-          <div class="roadmap-target">
-            <strong>Next Level:</strong> {{ result.results.career_roadmap.target_next_level }}
-          </div>
-          <div class="roadmap-steps">
-            <h5>Recommended Steps:</h5>
-            <ol>
-              <li *ngFor="let step of result.results.career_roadmap.steps">{{ step }}</li>
-            </ol>
-          </div>
-        </div>
-
-        <!-- Full Report Toggle -->
-        <details class="full-report">
-          <summary>View Full JSON Report</summary>
-          <pre>{{ result | json }}</pre>
-        </details>
+<div class="landing-container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        Your Resume, Reviewed Like a Recruiter
+      </h1>
+      <p class="hero-subtitle">
+        Get instant ATS scoring, AI-powered analysis, and actionable insights to optimize your resume for better job matches.
+      </p>
+      <div class="hero-actions">
+        <button class="primary-btn" (click)="navigateToUpload()">
+          Upload Resume
+        </button>
+        <button class="secondary-btn" (click)="scrollToSection('how-it-works')">
+          See How It Works
+        </button>
       </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-illustration">
+        <!-- Simple gradient background as placeholder -->
+        <div class="illustration-placeholder">
+          <svg viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="300" rx="12" fill="url(#gradient)"/>
+            <circle cx="200" cy="150" r="60" fill="rgba(255,255,255,0.2)"/>
+            <rect x="160" y="120" width="80" height="60" rx="4" fill="rgba(255,255,255,0.3)"/>
+            <text x="200" y="180" text-anchor="middle" fill="white" font-size="14">Resume Analysis</text>
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#2563eb"/>
+                <stop offset="100%" style="stop-color:#1d4ed8"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
       </div>
     </div>
   </section>
-  <app-footer></app-footer>
+
+  <!-- Key Benefits Section -->
+  <section class="benefits-section">
+    <div class="section-container">
+      <h2 class="section-title">Why Choose Our Resume Analyzer?</h2>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M9 12l2 2 4-4"/>
+              <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/>
+            </svg>
+          </div>
+          <h3>ATS Compatibility Score</h3>
+          <p>Get a detailed score showing how well your resume performs with Applicant Tracking Systems used by 90% of employers.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="7.5,4.27 7.5,9.72"/>
+              <polyline points="16.5,4.27 16.5,9.72"/>
+            </svg>
+          </div>
+          <h3>Skill Gap Detection</h3>
+          <p>Identify missing skills and keywords from job descriptions to improve your chances of getting noticed.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </div>
+          <h3>AI Career Suggestions</h3>
+          <p>Receive personalized recommendations to enhance your resume based on industry standards and job market trends.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-it-works-section" id="how-it-works">
+    <div class="section-container">
+      <h2 class="section-title">How It Works</h2>
+      <div class="steps-container">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7,10 12,15 17,10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </div>
+          <h3>Upload Resume</h3>
+          <p>Upload your resume in PDF or DOCX format. Our system securely processes your document.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </div>
+          <h3>AI Analysis</h3>
+          <p>Advanced AI algorithms analyze your resume for ATS compatibility, skills, and overall impact.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M9 12l2 2 4-4"/>
+              <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/>
+            </svg>
+          </div>
+          <h3>Get Actionable Insights</h3>
+          <p>Receive detailed feedback, improvement suggestions, and a comprehensive analysis report.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust Section -->
+  <section class="trust-section">
+    <div class="section-container">
+      <div class="trust-content">
+        <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <p class="trust-text">Trusted by professionals and recruiters worldwide</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA Section -->
+  <section class="final-cta-section">
+    <div class="section-container">
+      <div class="cta-content">
+        <h2>Ready to Optimize Your Resume?</h2>
+        <p>Get started with our free resume analysis and take the first step towards your dream job.</p>
+        <button class="primary-btn large" (click)="navigateToUpload()">
+          Start Free Resume Analysis
+        </button>
+      </div>
+    </div>
+  </section>
 </div>

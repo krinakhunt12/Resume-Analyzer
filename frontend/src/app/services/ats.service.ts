@@ -11,6 +11,7 @@ export class AtsService {
     constructor(private http: HttpClient) { }
 
     analyzeResume(formData: FormData): Observable<any> {
+        console.log('ATS Service: Calling analyze API with formData');
         return this.http.post(`${this.apiUrl}/analyze`, formData);
     }
 

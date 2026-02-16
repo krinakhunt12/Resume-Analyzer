@@ -1,0 +1,255 @@
+.upload-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 2rem 1rem;
+}
+
+.upload-layout {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.upload-section,
+.jd-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-card,
+.jd-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+}
+
+.upload-card h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.upload-description {
+  color: #64748b;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.drop-zone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f8fafc;
+}
+
+.drop-zone:hover {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.drop-zone.drag-over {
+  border-color: #2563eb;
+  background: #eff6ff;
+  transform: scale(1.02);
+}
+
+.drop-zone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.upload-icon {
+  width: 3rem;
+  height: 3rem;
+  color: #64748b;
+  stroke-width: 1.5;
+}
+
+.drop-text {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #374151;
+  margin: 0;
+}
+
+.or-text {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.choose-file-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.choose-file-btn:hover {
+  background: #1d4ed8;
+}
+
+.file-selected {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.file-icon {
+  width: 2rem;
+  height: 2rem;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.file-info {
+  flex: 1;
+  text-align: left;
+}
+
+.file-name {
+  font-weight: 500;
+  color: #1e293b;
+  margin: 0;
+  word-break: break-all;
+}
+
+.file-size {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0.25rem 0 0 0;
+}
+
+.check-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #10b981;
+  flex-shrink: 0;
+  stroke-width: 2.5;
+}
+
+.jd-card h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.optional {
+  font-weight: 400;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.jd-description {
+  color: #64748b;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.jd-textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.jd-textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.action-section {
+  max-width: 1100px;
+  margin: 2rem auto 0;
+  text-align: center;
+}
+
+.analyze-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 200px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.analyze-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.analyze-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.loading-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .upload-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .upload-card,
+  .jd-card {
+    padding: 1.5rem;
+  }
+
+  .drop-zone {
+    padding: 1.5rem;
+  }
+
+  .analyze-btn {
+    width: 100%;
+    max-width: none;
+  }
+}

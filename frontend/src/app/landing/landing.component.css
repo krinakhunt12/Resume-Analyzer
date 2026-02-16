@@ -1,53 +1,325 @@
-.landing-page {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #F8FAFC;
-  color: #111827;
-  line-height: 1.6;
+.landing-container {
   min-height: 100vh;
-  animation: fadeIn 0.5s ease-in;
-  scroll-behavior: smooth;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-* {
-  box-sizing: border-box;
-}
-
-.container {
-  max-width: 1100px;
+/* Hero Section */
+.hero-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  padding: 4rem 2rem;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  min-height: 80vh;
 }
 
-.btn {
-  display: inline-block;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  cursor: pointer;
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #1e293b;
+  margin: 0;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.primary-btn {
+  background: #2563eb;
+  color: white;
   border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.btn-primary {
-  background-color: #2563EB;
+.primary-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+}
+
+.primary-btn.large {
+  padding: 1.25rem 2.5rem;
+  font-size: 1.25rem;
+}
+
+.secondary-btn {
+  background: white;
+  color: #374151;
+  border: 2px solid #e5e7eb;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondary-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.hero-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-illustration {
+  width: 100%;
+  max-width: 400px;
+}
+
+.illustration-placeholder {
+  width: 100%;
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.illustration-placeholder svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Benefits Section */
+.benefits-section {
+  padding: 5rem 2rem;
+  background: #f8fafc;
+}
+
+.section-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: center;
+  margin: 0 0 3rem 0;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.benefit-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.benefit-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1.5rem;
+  color: #2563eb;
+  stroke-width: 1.5;
+}
+
+.benefit-card h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1rem 0;
+}
+
+.benefit-card p {
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* How It Works Section */
+.how-it-works-section {
+  padding: 5rem 2rem;
+  background: white;
+}
+
+.steps-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 3rem;
+  margin-top: 3rem;
+}
+
+.step {
+  text-align: center;
+  position: relative;
+}
+
+.step-number {
+  position: absolute;
+  top: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2563eb;
+  color: white;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.step-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1.5rem;
+  color: #2563eb;
+  stroke-width: 1.5;
+}
+
+.step h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1rem 0;
+}
+
+.step p {
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Trust Section */
+.trust-section {
+  padding: 3rem 2rem;
+  background: #f8fafc;
+}
+
+.trust-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.trust-icon {
+  width: 2rem;
+  height: 2rem;
+  color: #2563eb;
+  stroke-width: 1.5;
+}
+
+.trust-text {
+  font-size: 1.125rem;
+  color: #64748b;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Final CTA Section */
+.final-cta-section {
+  padding: 5rem 2rem;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: white;
 }
 
-.btn-primary:hover {
-  background-color: #1D4ED8;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+.cta-content {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.btn-secondary {
-  background-color: transparent;
-  color: #2563EB;
+.cta-content h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+}
+
+.cta-content p {
+  font-size: 1.25rem;
+  margin: 0 0 2rem 0;
+  opacity: 0.9;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .hero-section {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .hero-actions {
+    justify-content: center;
+  }
+
+  .benefits-grid,
+  .steps-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .section-title {
+    font-size: 2rem;
+  }
+
+  .benefit-card,
+  .step {
+    padding: 1.5rem;
+  }
+
+  .trust-content {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .cta-content h2 {
+    font-size: 2rem;
+  }
+}
   border: 2px solid #2563EB;
 }
 
