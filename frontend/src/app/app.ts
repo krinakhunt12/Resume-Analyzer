@@ -1,12 +1,16 @@
 import { Component, signal, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 import { AtsService } from './services/ats.service';
+import { LandingComponent } from './landing/landing.component';
+import { ToastComponent } from './toast/toast.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HttpClientModule, LandingComponent, ToastComponent],
+  providers: [AtsService],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

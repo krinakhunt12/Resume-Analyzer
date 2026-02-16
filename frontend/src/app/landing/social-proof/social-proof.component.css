@@ -1,0 +1,62 @@
+.testimonial {
+  text-align: center;
+  margin-bottom: 60px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.testimonial blockquote {
+  font-size: 1.25rem;
+  font-style: italic;
+  color: #111827;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.testimonial blockquote::before {
+  content: '"';
+  font-size: 4rem;
+  color: #2563EB;
+  position: absolute;
+  left: -20px;
+  top: -10px;
+}
+
+.testimonial cite {
+  color: #6B7280;
+  font-weight: 600;
+}
+
+.metrics {
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+}
+
+.metric {
+  text-align: center;
+}
+
+.metric-number {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #2563EB;
+  margin-bottom: 8px;
+}
+
+.metric-label {
+  color: #6B7280;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .metrics {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .metric-number {
+    font-size: 2rem;
+  }
+}

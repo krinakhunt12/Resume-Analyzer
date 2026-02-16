@@ -1,0 +1,78 @@
+<div class="landing-grid">
+  <section class="intro">
+    <h1>Resume Analyzer</h1>
+    <p>Upload your resume and an optional job description to get a detailed analysis:</p>
+    <ul>
+      <li><strong>AI Scoring:</strong> Overall match and ATS compatibility score.</li>
+      <li><strong>Job Match:</strong> Keyword and skills alignment with JD.</li>
+      <li><strong>Skill Gap:</strong> Missing or weak skills highlighted.</li>
+      <li><strong>Feedback:</strong> Actionable suggestions to improve your resume.</li>
+    </ul>
+
+    <div class="start-cta">
+      <button class="primary big" (click)="startAnalysis()">Start Analysis</button>
+    </div>
+
+    <h3>How it works</h3>
+    <ol class="workflow">
+      <li><strong>Extract:</strong> We extract text from your PDF/DOCX resume.</li>
+      <li><strong>Parse:</strong> The resume is parsed to identify skills, experience, education.</li>
+      <li><strong>Analyze:</strong> The engine scores ATS-compatibility, keyword match, impact metrics.</li>
+      <li><strong>Report:</strong> You receive a recruiter-style summary with recommendations.</li>
+    </ol>
+
+    <p class="note">Tip: Paste a job description or upload one to get a tailored analysis.</p>
+  </section>
+
+  <section class="uploader" *ngIf="showUploader" id="uploader">
+    <div class="card">
+      <h2>Try it now</h2>
+
+      <label class="file-label">Resume (PDF/DOCX)
+        <input type="file" accept=".pdf,.doc,.docx" (change)="onResumeSelected($event)" />
+      </label>
+
+      <label class="file-label">Job Description (optional)
+        <input type="file" accept=".pdf,.doc,.docx" (change)="onJDSelected($event)" />
+      </label>
+
+      <div class="or">— OR —</div>
+
+      <label class="jd-text">Paste Job Description
+        <textarea rows="6" [(ngModel)]="jdText" placeholder="Paste job description text here"></textarea>
+      </label>
+
+      <div class="actions">
+        <button class="primary" (click)="uploadAnalyze()" [disabled]="loading">Analyze</button>
+        <button class="secondary" (click)="clear()" [disabled]="loading">Reset</button>
+      </div>
+
+      <div *ngIf="loading" class="progress">Progress: {{progress}}%</div>
+      <div *ngIf="error" class="error">{{error}}</div>
+
+      <div *ngIf="result" class="results">
+        <h3>Analysis Summary</h3>
+        <p><strong>Overall Score:</strong> {{result.results.overall_score}} — <em>{{result.results.rating}}</em></p>
+        <p><strong>Top Strengths:</strong></p>
+        <ul>
+          <li *ngFor="let s of result.results.strengths">{{s}}</li>
+        </ul>
+
+        <p><strong>Top Recommendations:</strong></p>
+        <ul>
+          <li *ngFor="let r of (result.results.recommendations || []).slice(0,6)">{{r}}</li>
+        </ul>
+
+        <p><strong>Missing Keywords (sample):</strong></p>
+        <div class="badges">
+          <span class="badge" *ngFor="let k of (result.results.keyword_match?.missing_keywords || []).slice(0,10)">{{k}}</span>
+        </div>
+
+        <details>
+          <summary>Full JSON report</summary>
+          <pre>{{result | json}}</pre>
+        </details>
+      </div>
+    </div>
+  </section>
+</div>

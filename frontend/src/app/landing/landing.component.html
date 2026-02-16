@@ -1,0 +1,164 @@
+<div class="landing-page">
+  <app-hero (uploadResume)="startAnalysis()" (seeHowItWorks)="scrollToSection('how-it-works')"></app-hero>
+  <app-features id="features"></app-features>
+  <app-how-it-works id="how-it-works"></app-how-it-works>
+  <app-social-proof></app-social-proof>
+  <app-cta (startAnalysis)="startAnalysis()"></app-cta>
+  <section class="uploader-section" *ngIf="showUploader" id="uploader">
+    <div class="container">
+      <div class="card">
+        <h2>Upload Your Resume</h2>
+        <p>Get started with your free resume analysis.</p>
+        <div class="upload-form">
+          <label class="file-input">
+            <input type="file" accept=".pdf,.docx" (change)="onResumeSelected($event)" />
+            <span class="file-label-text">{{ resumeFile ? resumeFile.name : 'Choose Resume File' }}</span>
+          </label>
+          <label class="file-input">
+            <input type="file" accept=".pdf,.docx" (change)="onJDSelected($event)" />
+            <span class="file-label-text">{{ jdFile ? jdFile.name : 'Choose Job Description (Optional)' }}</span>
+          </label>
+          <button class="btn btn-primary" (click)="uploadAnalyze()" [disabled]="loading || !resumeFile">
+            {{ loading ? 'Analyzing...' : 'Analyze Resume' }}
+          </button>
+        </div>
+        <div *ngIf="loading" class="progress-bar">
+          <div class="progress-fill" [style.width.%]="progress"></div>
+          <span class="progress-text">{{ progress }}% Complete</span>
+        </div>
+        <div *ngIf="error" class="error-message">{{ error }}</div>
+      <div *ngIf="result" class="results-detailed">
+        <h3>Analysis Results</h3>
+
+        <!-- Overall Score -->
+        <div class="score-card card">
+          <h4>Overall Score</h4>
+          <div class="score-display">
+            <div class="score-circle" [style]="getScoreStyle(result.results.overall_score)">
+              {{ result.results.overall_score }}/100
+            </div>
+            <div class="rating">{{ result.results.rating }}</div>
+          </div>
+        </div>
+
+        <!-- Detailed Scores -->
+        <div class="scores-grid card">
+          <h4>Detailed Scores</h4>
+          <div class="score-item" *ngFor="let score of getScoreItems()">
+            <div class="score-label">{{ score.label }}</div>
+            <div class="score-bar">
+              <div class="score-fill" [style.width.%]="score.value"></div>
+            </div>
+            <div class="score-value">{{ score.value }}/100</div>
+          </div>
+        </div>
+
+        <!-- Candidate Details -->
+        <div class="details-card card">
+          <h4>Candidate Details</h4>
+          <div class="detail-item">
+            <strong>Name:</strong> {{ result.recruiter_insights.candidate_details.name }}
+          </div>
+          <div class="detail-item">
+            <strong>Email:</strong> {{ result.recruiter_insights.candidate_details.email }}
+          </div>
+          <div class="detail-item">
+            <strong>Phone:</strong> {{ result.recruiter_insights.candidate_details.phone }}
+          </div>
+          <div class="detail-item">
+            <strong>Experience:</strong> {{ result.recruiter_insights.candidate_details.total_years_experience }}
+          </div>
+        </div>
+
+        <!-- Skills -->
+        <div class="skills-card card">
+          <h4>Skills Overview</h4>
+          <div class="skill-section">
+            <h5>Technical Skills ({{ result.recruiter_insights.key_sections.skills.technical.length }})</h5>
+            <div class="skill-tags">
+              <span class="skill-tag" *ngFor="let skill of result.recruiter_insights.key_sections.skills.technical">{{ skill }}</span>
+            </div>
+          </div>
+          <div class="skill-section">
+            <h5>Soft Skills ({{ result.recruiter_insights.key_sections.skills.soft_skills.length }})</h5>
+            <div class="skill-tags">
+              <span class="skill-tag" *ngFor="let skill of result.recruiter_insights.key_sections.skills.soft_skills">{{ skill }}</span>
+            </div>
+          </div>
+          <div class="skill-section">
+            <h5>Tools ({{ result.recruiter_insights.key_sections.skills.tools.length }})</h5>
+            <div class="skill-tags">
+              <span class="skill-tag" *ngFor="let skill of result.recruiter_insights.key_sections.skills.tools">{{ skill }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Strengths and Recommendations -->
+        <div class="feedback-card card">
+          <h4>Strengths</h4>
+          <ul class="strengths-list">
+            <li *ngFor="let strength of result.results.strengths">{{ strength }}</li>
+          </ul>
+        </div>
+
+        <div class="feedback-card card">
+          <h4>Recommendations</h4>
+          <ul class="recommendations-list">
+            <li *ngFor="let rec of result.results.recommendations">{{ rec }}</li>
+          </ul>
+        </div>
+
+        <!-- ATS Compatibility -->
+        <div class="ats-card card">
+          <h4>ATS Compatibility</h4>
+          <div class="ats-score">Score: {{ result.recruiter_insights.ats_compatibility.score }}/100</div>
+          <div class="ats-issues" *ngIf="result.recruiter_insights.ats_compatibility.formatting_issues.length">
+            <h5>Issues:</h5>
+            <ul>
+              <li *ngFor="let issue of result.recruiter_insights.ats_compatibility.formatting_issues">{{ issue }}</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Improvement Suggestions -->
+        <div class="improvements-card card">
+          <h4>Improvement Suggestions</h4>
+          <div *ngIf="result.recruiter_insights.improvement_suggestions.skills_to_add.length">
+            <h5>Skills to Add:</h5>
+            <ul>
+              <li *ngFor="let skill of result.recruiter_insights.improvement_suggestions.skills_to_add">{{ skill }}</li>
+            </ul>
+          </div>
+          <div *ngIf="result.recruiter_insights.improvement_suggestions.content_improvements.length">
+            <h5>Content Improvements:</h5>
+            <ul>
+              <li *ngFor="let imp of result.recruiter_insights.improvement_suggestions.content_improvements">{{ imp }}</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Career Roadmap -->
+        <div class="roadmap-card card">
+          <h4>Career Roadmap</h4>
+          <div class="roadmap-target">
+            <strong>Next Level:</strong> {{ result.results.career_roadmap.target_next_level }}
+          </div>
+          <div class="roadmap-steps">
+            <h5>Recommended Steps:</h5>
+            <ol>
+              <li *ngFor="let step of result.results.career_roadmap.steps">{{ step }}</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- Full Report Toggle -->
+        <details class="full-report">
+          <summary>View Full JSON Report</summary>
+          <pre>{{ result | json }}</pre>
+        </details>
+      </div>
+      </div>
+    </div>
+  </section>
+  <app-footer></app-footer>
+</div>

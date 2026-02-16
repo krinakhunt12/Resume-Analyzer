@@ -1,0 +1,16 @@
+<section class="how-it-works section">
+  <div class="container">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-subtitle">Get professional resume analysis in just three simple steps.</p>
+    <div class="steps-container">
+      <div class="step" *ngFor="let step of steps; let i = index">
+        <div class="step-number">{{ step.number }}</div>
+        <div class="step-content">
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+        </div>
+        <div class="step-connector" *ngIf="i < steps.length - 1"></div>
+      </div>
+    </div>
+  </div>
+</section>

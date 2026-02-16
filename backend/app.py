@@ -22,7 +22,7 @@ from src.ats_analyzer import ATSAnalyzer
 from src.report_generator import ReportGenerator
 
 app = Flask(__name__)
-CORS(app) # Enable CORS for all routes
+CORS(app, origins=["http://localhost:4200"], supports_credentials=True)
 
 # Use system temp directory for transient data
 base_temp = os.path.join(tempfile.gettempdir(), 'resume_analyzer')
@@ -53,6 +53,9 @@ def allowed_file(filename):
 @app.route('/analyze', methods=['POST', 'OPTIONS'])
 def analyze():
     """Analyze resume endpoint"""
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'ok'}), 200
+    
     try:
         # Check if resume file is present
         if 'resume' not in request.files:

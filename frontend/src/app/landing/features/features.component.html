@@ -1,0 +1,13 @@
+<section class="features section">
+  <div class="container">
+    <h2 class="section-title">Powerful Features</h2>
+    <p class="section-subtitle">Everything you need to optimize your resume and stand out to recruiters.</p>
+    <div class="features-grid">
+      <div class="feature-card card" *ngFor="let feature of features">
+        <div class="feature-icon">{{ feature.icon }}</div>
+        <h3>{{ feature.title }}</h3>
+        <p>{{ feature.description }}</p>
+      </div>
+    </div>
+  </div>
+</section>
