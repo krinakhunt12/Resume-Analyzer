@@ -1,131 +1,261 @@
-<div class="results-container">
-  <!-- Top Summary Section -->
-  <div class="summary-section">
-    <div class="score-circle" [style.border-color]="getScoreColor(results()?.results?.overall_score || 0)">
-      <div class="score-number">{{ results()?.results?.overall_score || 0 }}</div>
-      <div class="score-text">{{ getScoreText(results()?.results?.overall_score || 0) }}</div>
+@if (!isLoading()) {
+  <div class="results-container">
+    <!-- Header Section -->
+    <div class="results-header">
+      <button class="back-btn" (click)="goBack()" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <polyline points="15,18 9,12 15,6"/>
+        </svg>
+        Back to Upload
+      </button>
+      <h1>Resume Analysis Results</h1>
     </div>
-    <div class="summary-text">
-      <h1>Resume Analysis Complete</h1>
-      <p>Your resume has been analyzed for ATS compatibility and overall effectiveness.</p>
+
+  <!-- Score Summary Section -->
+  <div class="score-summary-card">
+    <div class="score-circle-container">
+      <div class="score-circle" [style.background]="getScoreGradient(results()?.results?.overall_score || 0)">
+        <div class="score-inner">
+          <span class="score-number">{{ results()?.results?.overall_score || 0 }}</span>
+          <span class="score-label">Overall Score</span>
+        </div>
+      </div>
+      <div class="score-status">
+        <span class="status-badge" [style.background-color]="getScoreColor(results()?.results?.overall_score || 0)">
+          {{ getScoreText(results()?.results?.overall_score || 0) }}
+        </span>
+        <p class="score-description">Your resume has been analyzed for ATS compatibility and content quality.</p>
+      </div>
     </div>
   </div>
 
-  <!-- Resume Summary Card -->
-  <div class="result-card">
-    <h2>Resume Summary</h2>
-    <div class="summary-content">
-      <div class="summary-item">
-        <span class="label">Experience:</span>
-        <span class="value">{{ results()?.results?.experience_years || 'N/A' }} years</span>
+  <!-- Quick Stats Row -->
+  <div class="quick-stats">
+    <div class="stat-item">
+      <div class="stat-value">{{ formatExperienceYears(results()?.results?.experience_years) }}</div>
+      <div class="stat-label">Experience</div>
+    </div>
+    @if (hasJobDescription() && getMatchPercentage() !== null) {
+      <div class="stat-item">
+        <div class="stat-value">{{ getMatchPercentage() }}%</div>
+        <div class="stat-label">Job Match</div>
       </div>
-      @if (results()?.results?.summary) {
-        <div class="summary-description">
-          {{ results()?.results?.summary }}
+    }
+    @if (results()?.results?.ats_score) {
+      <div class="stat-item">
+        <div class="stat-value">{{ results()?.results?.ats_score }}/100</div>
+        <div class="stat-label">ATS Score</div>
+      </div>
+    }
+    @if (results()?.results?.recommendations?.length) {
+      <div class="stat-item">
+        <div class="stat-value">{{ results()?.results?.recommendations?.length }}</div>
+        <div class="stat-label">Suggestions</div>
+      </div>
+    }
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="content-grid">
+    <!-- Resume Summary -->
+    <div class="content-card">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14,2 14,8 20,8"/>
+        </svg>
+        <h2>Resume Summary</h2>
+      </div>
+      <div class="card-content">
+        @if (results()?.results?.summary) {
+          <div>
+            <p class="summary-text">{{ results()?.results?.summary }}</p>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p>Resume summary not available</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Key Strengths -->
+    @if (hasStrengths()) {
+      <div class="content-card">
+        <div class="card-header">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <h2>Key Strengths</h2>
         </div>
-      }
-      @if (results()?.results?.strengths && results()!.results!.strengths!.length > 0) {
-        <div class="strengths-section">
-          <h3>Key Strengths</h3>
-          <ul>
-            @for (strength of results()!.results!.strengths!; track strength) {
-              <li>{{ strength }}</li>
+        <div class="card-content">
+          <ul class="strengths-list">
+            @for (strength of results()?.results?.strengths; track strength) {
+              <li>
+                <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <polyline points="20,6 9,17 4,12"/>
+                </svg>
+                {{ strength }}
+              </li>
             }
           </ul>
         </div>
-      }
-    </div>
+      </div>
+    }
+
+    <!-- Skills Analysis -->
+    @if (hasSkillsAnalysis()) {
+      <div class="content-card full-width">
+        <div class="card-header">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <h2>Skills Analysis</h2>
+        </div>
+        <div class="card-content">
+          <div class="skills-grid">
+            @if (results()?.results?.skills_analysis?.technical_skills?.length) {
+              <div class="skill-category">
+                <h3>Technical Skills</h3>
+                <div class="skill-tags">
+                  @for (skill of results()?.results?.skills_analysis?.technical_skills; track skill) {
+                    <span class="skill-tag tech">
+                      {{ skill }}
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+            
+            @if (results()?.results?.skills_analysis?.soft_skills?.length) {
+              <div class="skill-category">
+                <h3>Soft Skills</h3>
+                <div class="skill-tags">
+                  @for (skill of results()?.results?.skills_analysis?.soft_skills; track skill) {
+                    <span class="skill-tag soft">
+                      {{ skill }}
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+            
+            @if (results()?.results?.skills_analysis?.missing_skills?.length) {
+              <div class="skill-category">
+                <h3>Skills to Consider Adding</h3>
+                <div class="skill-tags">
+                  @for (skill of results()?.results?.skills_analysis?.missing_skills; track skill) {
+                    <span class="skill-tag missing">
+                      {{ skill }}
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Job Match Analysis -->
+    @if (hasJobDescription() && hasKeywordMatch()) {
+      <div class="content-card full-width">
+        <div class="card-header">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <h2>Job Match Analysis</h2>
+          @if (getMatchPercentage() !== null) {
+            <div class="match-percentage">
+              <span class="percentage">{{ getMatchPercentage() }}% Match</span>
+            </div>
+          }
+        </div>
+        <div class="card-content">
+          <div class="keyword-analysis">
+            @if (results()?.results?.keyword_match?.matched_keywords?.length) {
+              <div class="keyword-section">
+                <h4>
+                  <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="20,6 9,17 4,12"/>
+                  </svg>
+                  Matched Keywords ({{ results()?.results?.keyword_match?.matched_keywords?.length }})
+                </h4>
+                <div class="keyword-tags matched">
+                  @for (keyword of results()?.results?.keyword_match?.matched_keywords; track keyword) {
+                    <span class="keyword-tag">
+                      {{ keyword }}
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+            
+            @if (results()?.results?.keyword_match?.missing_keywords?.length) {
+              <div class="keyword-section">
+                <h4>
+                  <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                  </svg>
+                  Missing Keywords ({{ results()?.results?.keyword_match?.missing_keywords?.length }})
+                </h4>
+                <div class="keyword-tags missing">
+                  @for (keyword of results()?.results?.keyword_match?.missing_keywords; track keyword) {
+                    <span class="keyword-tag">
+                      {{ keyword }}
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Improvement Recommendations -->
+    @if (hasRecommendations()) {
+      <div class="content-card full-width">
+        <div class="card-header">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <h2>Improvement Recommendations</h2>
+        </div>
+        <div class="card-content">
+          <div class="recommendations-list">
+            @for (recommendation of results()?.results?.recommendations; track recommendation; let i = $index) {
+              <div class="recommendation-item">
+                <div class="recommendation-number">{{ i + 1 }}</div>
+                <div class="recommendation-content">
+                  <p>{{ recommendation }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
   </div>
-
-  <!-- Skills Breakdown -->
-  @if (results()?.results?.skills_analysis) {
-    <div class="result-card">
-      <h2>Skills Analysis</h2>
-      <div class="skills-grid">
-        @if (results()?.results?.skills_analysis?.technical_skills && results()!.results!.skills_analysis!.technical_skills!.length > 0) {
-          <div class="skill-category">
-            <h3>Technical Skills</h3>
-            <div class="skill-tags">
-              @for (skill of results()!.results!.skills_analysis!.technical_skills!; track skill) {
-                <span class="skill-tag">{{ skill }}</span>
-              }
-            </div>
-          </div>
-        }
-        @if (results()?.results?.skills_analysis?.soft_skills && results()!.results!.skills_analysis!.soft_skills!.length > 0) {
-          <div class="skill-category">
-            <h3>Soft Skills</h3>
-            <div class="skill-tags">
-              @for (skill of results()!.results!.skills_analysis!.soft_skills!; track skill) {
-                <span class="skill-tag">{{ skill }}</span>
-              }
-            </div>
-          </div>
-        }
-        @if (results()?.results?.skills_analysis?.missing_skills && results()!.results!.skills_analysis!.missing_skills!.length > 0) {
-          <div class="skill-category">
-            <h3>Missing Skills</h3>
-            <div class="skill-tags missing">
-              @for (skill of results()!.results!.skills_analysis!.missing_skills!; track skill) {
-                <span class="skill-tag">{{ skill }}</span>
-              }
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  }
-
-  <!-- Match Analysis (if JD provided) -->
-  @if (jobDescription() && results()?.results?.keyword_match) {
-    <div class="result-card">
-      <h2>Job Match Analysis</h2>
-      <div class="match-content">
-        @if (results()?.results?.keyword_match?.matched_keywords && results()!.results!.keyword_match!.matched_keywords!.length > 0) {
-          <div class="match-section">
-            <h3>Matched Keywords</h3>
-            <div class="keyword-tags matched">
-              @for (keyword of results()!.results!.keyword_match!.matched_keywords!; track keyword) {
-                <span class="keyword-tag">{{ keyword }}</span>
-              }
-            </div>
-          </div>
-        }
-        @if (results()?.results?.keyword_match?.missing_keywords && results()!.results!.keyword_match!.missing_keywords!.length > 0) {
-          <div class="match-section">
-            <h3>Missing Keywords</h3>
-            <div class="keyword-tags missing">
-              @for (keyword of results()!.results!.keyword_match!.missing_keywords!; track keyword) {
-                <span class="keyword-tag">{{ keyword }}</span>
-              }
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  }
-
-  <!-- Improvement Suggestions -->
-  @if (results()?.results?.recommendations && results()!.results!.recommendations!.length > 0) {
-    <div class="result-card">
-      <h2>Improvement Suggestions</h2>
-      <div class="suggestions-list">
-        @for (suggestion of results()!.results!.recommendations!; track suggestion) {
-          <div class="suggestion-item">
-            <svg class="suggestion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="m9 12 2 2 4-4"/>
-            </svg>
-            <span>{{ suggestion }}</span>
-          </div>
-        }
-      </div>
-    </div>
-  }
 
   <!-- Action Buttons -->
   <div class="action-buttons">
-    <button class="secondary-btn" (click)="goBack()">Analyze Another Resume</button>
+    <button class="secondary-btn" (click)="goBack()">Upload Another Resume</button>
     <button class="primary-btn" (click)="startNewAnalysis()">Start New Analysis</button>
   </div>
 </div>
+}
+
+<!-- Loading State -->
+@if (isLoading()) {
+  <div class="loading-container">
+    <div class="loading-spinner large"></div>
+    <p>Loading results...</p>
+  </div>
+}

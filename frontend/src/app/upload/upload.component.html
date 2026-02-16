@@ -10,7 +10,9 @@
 
         <div
           class="drop-zone"
-          [class.drag-over]="false"
+          [class.drag-over]="isDragOver()"
+          [class.has-file]="resumeFile()"
+          [class.error]="errorMessage()"
           (dragover)="onDragOver($event)"
           (dragleave)="onDragLeave($event)"
           (drop)="onDrop($event)"
@@ -27,9 +29,12 @@
                   <p class="file-name">{{ resumeFile()?.name }}</p>
                   <p class="file-size">{{ (resumeFile()?.size || 0) / 1024 / 1024 | number:'1.1-1' }} MB</p>
                 </div>
-                <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <polyline points="20,6 9,17 4,12"/>
-                </svg>
+                <button class="remove-file-btn" (click)="clearFile(); $event.stopPropagation()" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
               </div>
             } @else {
               <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -43,6 +48,17 @@
             }
           </div>
         </div>
+
+        @if (errorMessage()) {
+          <div class="error-message">
+            <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="15" y1="9" x2="9" y2="15"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            {{ errorMessage() }}
+          </div>
+        }
 
         <input
           #fileInput
@@ -67,6 +83,7 @@
           rows="12"
           placeholder="Paste the job description here to get tailored recommendations..."
           [(ngModel)]="jobDescription"
+          [disabled]="isLoading"
         ></textarea>
       </div>
     </div>
@@ -76,14 +93,21 @@
   <div class="action-section">
     <button
       class="analyze-btn"
-      [disabled]="!resumeFile() || isAnalyzing()"
+      [disabled]="!canAnalyze"
+      [class.loading]="isLoading"
       (click)="analyzeResume()"
+      type="button"
     >
-      @if (isAnalyzing()) {
-        <div class="loading-spinner"></div>
-        Analyzing Resume...
+      @if (isLoading) {
+        <div class="loading-content">
+          <div class="loading-spinner"></div>
+          <span>Analyzing your resume...</span>
+        </div>
       } @else {
-        Analyze Resume
+        <span>Analyze Resume</span>
+        <svg class="analyze-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M5 12l5 5L20 7"/>
+        </svg>
       }
     </button>
   </div>

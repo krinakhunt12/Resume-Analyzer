@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AtsService } from '../services/ats.service';
 import { ToastService } from '../services/toast.service';
+import { LoadingState } from '../models/api.interfaces';
 
 @Component({
   selector: 'app-upload',
@@ -14,8 +15,12 @@ import { ToastService } from '../services/toast.service';
 })
 export class UploadComponent {
   resumeFile = signal<File | null>(null);
-  jobDescription = signal<string>('');
-  isAnalyzing = signal<boolean>(false);
+  jobDescription = '';  // Regular property for ngModel compatibility
+  loadingState = signal<LoadingState>(LoadingState.IDLE);
+  errorMessage = signal<string>('');
+  
+  readonly LoadingState = LoadingState;
+  private isDragOverSignal = signal<boolean>(false);
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -25,62 +30,79 @@ export class UploadComponent {
     private toastService: ToastService
   ) {}
 
+  // Public getter methods for template access
+  isDragOver(): boolean {
+    return this.isDragOverSignal();
+  }
+
   triggerFileInput(): void {
-    this.fileInput.nativeElement.click();
+    if (this.fileInput && this.fileInput.nativeElement) {
+      this.fileInput.nativeElement.click();
+    }
   }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (file) {
-      if (this.isValidFile(file)) {
-        this.resumeFile.set(file);
-        this.toastService.show({
-          type: 'success',
-          title: 'File Selected',
-          description: `${file.name} is ready for analysis.`
-        });
-      } else {
-        this.toastService.show({
-          type: 'error',
-          title: 'Invalid File',
-          description: 'Please select a PDF or DOCX file.'
-        });
-      }
+      this.handleFileSelection(file);
     }
+  }
+
+  clearFile(): void {
+    this.resumeFile.set(null);
+    this.errorMessage.set('');
+    if (this.fileInput) {
+      this.fileInput.nativeElement.value = '';
+    }
+  }
+
+  get canAnalyze(): boolean {
+    return this.loadingState() !== LoadingState.LOADING;
+  }
+
+  get isLoading(): boolean {
+    return this.loadingState() === LoadingState.LOADING;
   }
 
   onDragOver(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
+    this.isDragOverSignal.set(true);
   }
 
   onDragLeave(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
+    this.isDragOverSignal.set(false);
   }
 
   onDrop(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
+    this.isDragOverSignal.set(false);
 
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
-      const file = files[0];
-      if (this.isValidFile(file)) {
-        this.resumeFile.set(file);
-        this.toastService.show({
-          type: 'success',
-          title: 'File Selected',
-          description: `${file.name} is ready for analysis.`
-        });
-      } else {
-        this.toastService.show({
-          type: 'error',
-          title: 'Invalid File',
-          description: 'Please drop a PDF or DOCX file.'
-        });
-      }
+      this.handleFileSelection(files[0]);
+    }
+  }
+
+  private handleFileSelection(file: File): void {
+    if (this.isValidFile(file)) {
+      this.resumeFile.set(file);
+      this.errorMessage.set('');
+      this.toastService.show({
+        type: 'success',
+        title: 'File Selected',
+        description: `${file.name} is ready for analysis.`
+      });
+    } else {
+      this.toastService.show({
+        type: 'error',
+        title: 'Invalid File',
+        description: 'Please select a PDF or DOCX file.'
+      });
     }
   }
 
@@ -106,49 +128,81 @@ export class UploadComponent {
   }
 
   analyzeResume(): void {
-    console.log('Analyze button clicked');
-    console.log('Resume file:', this.resumeFile());
-    console.log('Job description:', this.jobDescription());
-
-    if (!this.resumeFile()) {
-      console.log('No resume file selected');
-      this.toastService.show({
-        type: 'warning',
-        title: 'No Resume Selected',
-        description: 'Please select a resume file to analyze.'
-      });
+    // Prevent multiple concurrent requests
+    if (this.loadingState() === LoadingState.LOADING) {
       return;
     }
 
-    console.log('Starting analysis...');
-    this.isAnalyzing.set(true);
+    // Validate inputs
+    if (!this.validateInputs()) {
+      return;
+    }
+
+    this.loadingState.set(LoadingState.LOADING);
+    this.errorMessage.set('');
 
     const formData = new FormData();
     formData.append('resume', this.resumeFile()!);
-    if (this.jobDescription().trim()) {
-      formData.append('job_description_text', this.jobDescription());
+    
+    if (this.jobDescription.trim()) {
+      formData.append('job_description_text', this.jobDescription.trim());
     }
 
-    console.log('FormData created, calling API...');
     this.atsService.analyzeResume(formData).subscribe({
       next: (response) => {
-        console.log('API response received:', response);
-        this.isAnalyzing.set(false);
-        // Navigate to results with data
+        this.loadingState.set(LoadingState.SUCCESS);
+        
+        // Navigate to results page with data
         this.router.navigate(['/results'], {
-          state: { results: response, jobDescription: this.jobDescription() }
+          state: { 
+            results: response, 
+            jobDescription: this.jobDescription.trim() || null
+          }
         });
       },
       error: (error) => {
-        console.error('API error:', error);
-        this.isAnalyzing.set(false);
+        this.loadingState.set(LoadingState.ERROR);
+        const errorMsg = error.error || 'Analysis failed. Please try again.';
+        this.errorMessage.set(errorMsg);
+        
         this.toastService.show({
           type: 'error',
           title: 'Analysis Failed',
-          description: 'There was an error analyzing your resume. Please try again.'
+          description: errorMsg
         });
-        console.error('Analysis error:', error);
       }
+    });
+  }
+
+  private validateInputs(): boolean {
+    const file = this.resumeFile();
+    
+    if (!file) {
+      this.showValidationError('Please select a resume file to analyze.');
+      return false;
+    }
+
+    if (!this.isValidFile(file)) {
+      this.showValidationError('Please upload a valid PDF or DOCX file.');
+      return false;
+    }
+
+    // Check file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.showValidationError('File size must be less than 10MB.');
+      return false;
+    }
+
+    return true;
+  }
+
+  private showValidationError(message: string): void {
+    this.errorMessage.set(message);
+    this.toastService.show({
+      type: 'warning',
+      title: 'Validation Error',
+      description: message
     });
   }
 }
