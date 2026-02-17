@@ -1,0 +1,117 @@
+{
+  "software_engineer": [
+    "software engineer",
+    "software developer",
+    "programmer",
+    "full stack",
+    "backend",
+    "frontend",
+    "web developer",
+    "java developer",
+    "python developer",
+    "c++",
+    "c#"
+  ],
+  "data_scientist": [
+    "data scientist",
+    "data science",
+    "ml engineer",
+    "machine learning",
+    "deep learning",
+    "nlp"
+  ],
+  "data_engineer": [
+    "data engineer",
+    "etl",
+    "data pipeline",
+    "bigdata",
+    "spark",
+    "hadoop"
+  ],
+  "devops_engineer": [
+    "devops",
+    "site reliability",
+    "sre",
+    "infrastructure",
+    "ci/cd",
+    "kubernetes",
+    "docker"
+  ],
+  "system_administrator": [
+    "system administrator",
+    "sysadmin",
+    "systems administrator",
+    "windows admin",
+    "linux admin"
+  ],
+  "database_administrator": [
+    "dba",
+    "database administrator",
+    "oracle dba",
+    "sql dba",
+    "mysql dba",
+    "postgres"
+  ],
+  "project_manager": [
+    "project manager",
+    "pm",
+    "project management",
+    "scrum master"
+  ],
+  "product_manager": [
+    "product manager",
+    "product owner",
+    "product management"
+  ],
+  "business_analyst": [
+    "business analyst",
+    "ba",
+    "business analysis"
+  ],
+  "qa_engineer": [
+    "qa",
+    "quality assurance",
+    "test engineer",
+    "tester",
+    "automation test"
+  ],
+  "ux_designer": [
+    "ux",
+    "ui designer",
+    "ux designer",
+    "user experience",
+    "ui/ux"
+  ],
+  "hr": [
+    "hr",
+    "human resources",
+    "recruiter",
+    "talent"
+  ],
+  "sales": [
+    "sales",
+    "account executive",
+    "account manager",
+    "bdm",
+    "business development"
+  ],
+  "marketing": [
+    "marketing",
+    "digital marketing",
+    "seo",
+    "content"
+  ],
+  "finance": [
+    "finance",
+    "financial",
+    "accountant",
+    "accounts payable",
+    "cpa"
+  ],
+  "legal": [
+    "legal",
+    "attorney",
+    "lawyer",
+    "paralegal"
+  ]
+}

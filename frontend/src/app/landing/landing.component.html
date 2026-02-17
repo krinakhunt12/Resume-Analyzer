@@ -1,12 +1,24 @@
 <div class="landing-container">
+  <header class="landing-header">
+    <div class="section-container">
+      <div class="brand">ATS Resume Analyzer</div>
+      <nav class="landing-nav">
+        <a (click)="scrollToSection('how-it-works')">How it Works</a>
+        <a (click)="scrollToSection('features')">Features</a>
+        <a (click)="scrollToSection('trust')">Trust</a>
+        <button class="primary-btn" (click)="navigateToUpload()">Upload Resume</button>
+      </nav>
+    </div>
+  </header>
+
   <!-- Hero Section -->
   <section class="hero-section">
     <div class="hero-content">
       <h1 class="hero-title">
-        Your Resume, Reviewed Like a Recruiter
+        Analyze Your Resume Like a Recruiter
       </h1>
       <p class="hero-subtitle">
-        Get instant ATS scoring, AI-powered analysis, and actionable insights to optimize your resume for better job matches.
+        Get an ATS score, skill-gap insights, job-description matching, and AI-powered career suggestions — fast and actionable.
       </p>
       <div class="hero-actions">
         <button class="primary-btn" (click)="navigateToUpload()">
@@ -41,7 +53,7 @@
   <!-- Key Benefits Section -->
   <section class="benefits-section">
     <div class="section-container">
-      <h2 class="section-title">Why Choose Our Resume Analyzer?</h2>
+      <h2 id="features" class="section-title">Why Choose Our Resume Analyzer?</h2>
       <div class="benefits-grid">
         <div class="benefit-card">
           <div class="benefit-icon">
@@ -80,7 +92,7 @@
   <!-- How It Works Section -->
   <section class="how-it-works-section" id="how-it-works">
     <div class="section-container">
-      <h2 class="section-title">How It Works</h2>
+      <h2 id="how" class="section-title">How It Works</h2>
       <div class="steps-container">
         <div class="step">
           <div class="step-number">1</div>
@@ -120,7 +132,7 @@
   </section>
 
   <!-- Trust Section -->
-  <section class="trust-section">
+  <section class="trust-section" id="trust">
     <div class="section-container">
       <div class="trust-content">
         <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">

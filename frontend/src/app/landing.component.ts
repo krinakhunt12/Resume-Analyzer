@@ -32,6 +32,12 @@ export class LandingComponent {
     setTimeout(() => this.scrollToUploader(), 120);
   }
 
+  scrollToSection(event: Event, id: string) {
+    event.preventDefault();
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   private scrollToUploader() {
     const el = document.getElementById('uploader');
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
